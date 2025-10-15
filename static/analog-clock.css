@@ -1,0 +1,131 @@
+:host {
+	display: inline-block;
+
+	--hours: 0;
+	--minutes: 0;
+	--seconds: 0;
+
+	/* 30 degrees per hour + minute adjustment */
+	--hour-rotation: calc(var(--hours) * 30deg + var(--minutes) * 0.5deg);
+	/* 6 degrees per minute */
+	--minute-rotation: calc(var(--minutes) * 6deg);
+	/* 6 degrees per second */
+	--second-rotation: calc(var(--seconds) * 6deg);
+
+	box-sizing: border-box;
+
+	font-size: 2rem;
+}
+
+.clock {
+	width: 200px;
+	height: 200px;
+	border: 4px solid #333;
+	border-radius: 50%;
+	position: relative;
+	background: white;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.numbers {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.number {
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	text-align: center;
+	line-height: 20px;
+	font-size: 2rem;
+	font-weight: bold;
+	color: #333;
+	transform: translate(-50%, -50%) rotate(calc(var(--index) * 30deg)) translateY(-75px)
+		rotate(calc(var(--index) * -30deg));
+	top: 50%;
+	left: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.ticks {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.tick {
+	position: absolute;
+	width: 1px;
+	height: 8px;
+	background: #999;
+	top: 6px;
+	left: 50%;
+	transform-origin: 50% 94px;
+	transform: translateX(-50%) rotate(calc(var(--tick) * 6deg));
+}
+
+.tick:nth-child(5n) {
+	width: 2px;
+	height: 12px;
+	background: #333;
+	/* top: 4px; */
+}
+
+.clock::before,
+.clock::after {
+	display: none;
+}
+
+.hand {
+	position: absolute;
+	left: 50%;
+	bottom: 50%;
+	transform-origin: bottom center;
+	transition: transform 0.2s ease-out;
+}
+
+.hand.hour {
+	width: 4px;
+	height: 60px;
+	background: #333;
+	border-radius: 2px;
+	z-index: 3;
+	transform: translateX(-50%) rotate(var(--hour-rotation));
+}
+
+.hand.minute {
+	width: 3px;
+	height: 80px;
+	background: #666;
+	border-radius: 1.5px;
+	z-index: 4;
+	transform: translateX(-50%) rotate(var(--minute-rotation));
+}
+
+.hand.second {
+	width: 1px;
+	height: 90px;
+	background: #e74c3c;
+	z-index: 5;
+	transform: translateX(-50%) rotate(var(--second-rotation));
+}
+
+.center {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 12px;
+	height: 12px;
+	background: #333;
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 6;
+}

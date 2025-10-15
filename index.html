@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Clocks</title>
+		<link rel="stylesheet" href="static/styles.css">
+	</head>
+	<body>
+		<main>
+			<h1>Clocks</h1>
+			<div class="container">
+				<!-- time="12:00:00" -->
+				<analog-clock tz="Asia/Shanghai"></analog-clock>
+				<analog-clock tz="UTC"></analog-clock>
+			</div>
+		</main>
+
+		<template id="analog-clock-template">
+			<link rel="stylesheet" href="static/analog-clock.css">
+			<div class="clock">
+				<!-- Hour numbers -->
+				<div class="numbers">
+					<div class="number" style="--index: 1">1</div>
+					<div class="number" style="--index: 2">2</div>
+					<div class="number" style="--index: 3">3</div>
+					<div class="number" style="--index: 4">4</div>
+					<div class="number" style="--index: 5">5</div>
+					<div class="number" style="--index: 6">6</div>
+					<div class="number" style="--index: 7">7</div>
+					<div class="number" style="--index: 8">8</div>
+					<div class="number" style="--index: 9">9</div>
+					<div class="number" style="--index: 10">10</div>
+					<div class="number" style="--index: 11">11</div>
+					<div class="number" style="--index: 12">12</div>
+				</div>
+
+				<!-- Minute ticks -->
+				<div class="ticks">
+					<div class="tick" style="--tick: 1"></div>
+					<div class="tick" style="--tick: 2"></div>
+					<div class="tick" style="--tick: 3"></div>
+					<div class="tick" style="--tick: 4"></div>
+					<div class="tick" style="--tick: 5"></div>
+					<div class="tick" style="--tick: 6"></div>
+					<div class="tick" style="--tick: 7"></div>
+					<div class="tick" style="--tick: 8"></div>
+					<div class="tick" style="--tick: 9"></div>
+					<div class="tick" style="--tick: 10"></div>
+					<div class="tick" style="--tick: 11"></div>
+					<div class="tick" style="--tick: 12"></div>
+					<div class="tick" style="--tick: 13"></div>
+					<div class="tick" style="--tick: 14"></div>
+					<div class="tick" style="--tick: 15"></div>
+					<div class="tick" style="--tick: 16"></div>
+					<div class="tick" style="--tick: 17"></div>
+					<div class="tick" style="--tick: 18"></div>
+					<div class="tick" style="--tick: 19"></div>
+					<div class="tick" style="--tick: 20"></div>
+					<div class="tick" style="--tick: 21"></div>
+					<div class="tick" style="--tick: 22"></div>
+					<div class="tick" style="--tick: 23"></div>
+					<div class="tick" style="--tick: 24"></div>
+					<div class="tick" style="--tick: 25"></div>
+					<div class="tick" style="--tick: 26"></div>
+					<div class="tick" style="--tick: 27"></div>
+					<div class="tick" style="--tick: 28"></div>
+					<div class="tick" style="--tick: 29"></div>
+					<div class="tick" style="--tick: 30"></div>
+					<div class="tick" style="--tick: 31"></div>
+					<div class="tick" style="--tick: 32"></div>
+					<div class="tick" style="--tick: 33"></div>
+					<div class="tick" style="--tick: 34"></div>
+					<div class="tick" style="--tick: 35"></div>
+					<div class="tick" style="--tick: 36"></div>
+					<div class="tick" style="--tick: 37"></div>
+					<div class="tick" style="--tick: 38"></div>
+					<div class="tick" style="--tick: 39"></div>
+					<div class="tick" style="--tick: 40"></div>
+					<div class="tick" style="--tick: 41"></div>
+					<div class="tick" style="--tick: 42"></div>
+					<div class="tick" style="--tick: 43"></div>
+					<div class="tick" style="--tick: 44"></div>
+					<div class="tick" style="--tick: 45"></div>
+					<div class="tick" style="--tick: 46"></div>
+					<div class="tick" style="--tick: 47"></div>
+					<div class="tick" style="--tick: 48"></div>
+					<div class="tick" style="--tick: 49"></div>
+					<div class="tick" style="--tick: 50"></div>
+					<div class="tick" style="--tick: 51"></div>
+					<div class="tick" style="--tick: 52"></div>
+					<div class="tick" style="--tick: 53"></div>
+					<div class="tick" style="--tick: 54"></div>
+					<div class="tick" style="--tick: 55"></div>
+					<div class="tick" style="--tick: 56"></div>
+					<div class="tick" style="--tick: 57"></div>
+					<div class="tick" style="--tick: 58"></div>
+					<div class="tick" style="--tick: 59"></div>
+					<div class="tick" style="--tick: 60"></div>
+				</div>
+
+				<div class="hand hour"></div>
+				<div class="hand minute"></div>
+				<div class="hand second"></div>
+				<div class="center"></div>
+			</div>
+		</template>
+
+		<script type="module" src="./dist/script.js"></script>
+	</body>
+</html>
