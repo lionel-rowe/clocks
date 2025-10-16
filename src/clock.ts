@@ -8,6 +8,10 @@ const OBSERVED_ATTRIBUTES = ['tz', 'locale'] as const
 
 type TimeoutLike = { valueOf(): number }
 
+// https://fonts.google.com/specimen/Poiret+One
+// https://openfontlicense.org/open-font-license-official-text/
+document.fonts.add(new FontFace('Poiret One', "url(/static/PoiretOne-Regular-subset.ttf) format('TrueType')"))
+
 abstract class Clock extends HTMLElement {
 	protected tz: string = 'UTC'
 	protected locale: string = 'en-US'
@@ -32,7 +36,7 @@ abstract class Clock extends HTMLElement {
 
 		this.shadowRoot.append(templateContent.cloneNode(true))
 
-		Promise.all([this.start()]).then(() => {
+		Promise.all([this.start(), document.fonts.load('1em "Poiret One"')]).then(() => {
 			this.style.display = initialDisplay
 		})
 	}
