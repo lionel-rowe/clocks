@@ -21,7 +21,9 @@
 
 	--frame-outer-width: 0.35em;
 	--frame-inner-width: 0.2em;
+
 	--frame-width: calc(var(--frame-outer-width) + var(--frame-inner-width));
+	--radius: calc(var(--size) / 2 - var(--frame-width));
 }
 
 * {
@@ -77,9 +79,7 @@
 	/* inset: var(--frame-width); */
 	inset: var(--frame-inner-width);
 
-	--radius: calc(var(--size) / 2 - var(--frame-width));
-
-	background: white;
+	background: #fffaf0;
 	border-radius: 50%;
 }
 
@@ -177,6 +177,7 @@
 	pointer-events: none;
 
 	--color: #262626;
+	--taper: 20%;
 	--shadow-offset: calc(var(--z-height) * 0.01em);
 	--shadow-spread: calc(var(--z-height) * 0.002em);
 	--tail: calc(var(--length) / 4);
@@ -211,20 +212,19 @@
 		--center-size: calc(var(--width) * 3);
 		--tail-end-length: 0.6em;
 		--tail-end-width: 0.2em;
+		--transition: transform 0.1s ease-out;
 	}
 
-	:is(.head, .tail) {
+	:is(.head, .tail-end) {
 		position: absolute;
 		inset: 50%;
-		transition: transform 0.2s ease-out;
+		transition: var(--transition, none);
 		transform: translate(-50%) rotate(var(--rotation));
 
-		&::before, &::after {
+		&::after {
 			position: absolute;
 			content: '';
-			width: var(--width);
 			background: var(--color);
-
 			transform-origin: bottom center;
 			left: 50%;
 			bottom: 50%;
@@ -232,22 +232,17 @@
 	}
 
 	.head {
-		&::before {
-			transform: translateX(-50%);
-			height: var(--length);
+		&::after {
+			clip-path: polygon(var(--taper) 0%, calc(100% - var(--taper)) 0%, 100% 100%, 0% 100%);
+			width: var(--width);
+			transform: translateX(-50%) translateY(var(--tail));
+			height: calc(var(--length) + var(--tail));
 		}
 	}
 
-	.tail {
-		&::before, &::after {
-			transform: translate(-50%) rotate(180deg);
-		}
-
-		&::before {
-			height: var(--tail);
-		}
-
+	.tail-end {
 		&::after {
+			transform: translate(-50%) rotate(180deg);
 			height: var(--tail-end-length);
 			width: var(--tail-end-width);
 			transform: translate(-50%, calc(var(--tail) - var(--tail-end-length))) rotate(180deg);
