@@ -1,3 +1,7 @@
+/**
+ * - All measurements must be in `em` or other relative units to remain relative to the root `font-size`
+ * - Inner elements should not set their own font-size
+ */
 :host {
 	display: inline-flex;
 
@@ -11,13 +15,6 @@
 	--minute-rotation: calc(var(--minutes) * 6deg + mod(var(--seconds), 60) * 0.1deg);
 	/* 6 degrees per second */
 	--second-rotation: calc(var(--seconds) * 6deg);
-
-	/**
-	 * - All other measurements must be in `em` or other units to remain relative to the root `font-size`
-	 * - Inner elements should not set their own font-size
-	 */
-	--font-size: 1rem;
-	font-size: var(--font-size);
 
 	--size: 10em;
 	--tick-height: 0.3em;
@@ -44,12 +41,13 @@
 	--shadow-offset: 0.1em;
 	background: #aaa;
 
+	/* https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_backgrounds_and_borders/Box-shadow_generator */
 	box-shadow:
 		var(--shadow-offset) var(--shadow-offset) 0.2em hsl(0deg 0% 0% / 0.3),
 		inset -0.125em -0.0625em 0 0 #1e1e1e,
 		inset -0.0625em 0.125em 0.0625em 0 #cccccc,
 		inset -0.1875em -0.25em 0 0 #3d3d3d,
-		inset 0.375em -0.3125em 0 0 #aaaaaa,
+		inset 0.2em -0.3125em 0 0 #aaaaaa,
 		inset -0.6875em -0.25em 0 -0.5em #dddddd,
 		inset -0.4375em -0.375em 0 0 #666666,
 		inset -0.375em 0.1875em 0 0 #ffffff,
@@ -63,6 +61,7 @@
 	border-radius: 50%;
 	--shadow-offset: 0.2em;
 	box-shadow: inset var(--shadow-offset) var(--shadow-offset) 0.6em hsl(0deg 0% 0% / 0.9);
+	pointer-events: none;
 }
 
 .frame-inner {
@@ -82,6 +81,15 @@
 
 	background: white;
 	border-radius: 50%;
+}
+
+.glass {
+	position: absolute;
+	inset: 0;
+	box-shadow: inset 0.5em 1em 0.05em hsl(0deg 0% 100% / 0.3);
+	border-radius: 50%;
+	z-index: 1000;
+	pointer-events: none;
 }
 
 .numbers {
@@ -108,7 +116,7 @@
 
 	transform: translate(-50%, -50%) rotate(calc(var(--n) * 30deg + 180deg))
 		translateY(calc(var(--radius) - calc(var(--inset) / 2))) rotate(calc(var(--n) * -30deg)) rotate(180deg)
-		translateX(calc(var(--letter-spacing) / 2));
+		translateX(calc(var(--letter-spacing) / 2)) scaleY(0.9);
 	inset: 50%;
 	display: flex;
 	justify-content: center;
@@ -117,7 +125,7 @@
 
 	&::after {
 		content: counter(clock);
-		font-size: 1.4em;
+		font-size: 1.6em;
 	}
 }
 
@@ -163,63 +171,110 @@
 	box-sizing: border-box;
 }
 
-.hand, .center {
-	filter: drop-shadow(var(--shadow-offset) var(--shadow-offset) 0.02em hsl(0deg 0% 0% / 0.2));
-}
-
 .hand {
 	position: absolute;
 	inset: 0;
-	--color: #333;
+	pointer-events: none;
 
-	&::after {
-		position: absolute;
-		content: '';
-		left: 50%;
-		bottom: 50%;
-		transform-origin: bottom center;
-		transition: transform 0.2s ease-out;
-		transform: translateX(-50%) rotate(var(--rotation));
-		height: var(--length);
-		width: var(--width);
-		width: var(--width);
-		background: var(--color);
-	}
+	--color: #262626;
+	--shadow-offset: calc(var(--z-height) * 0.01em);
+	--shadow-spread: calc(var(--z-height) * 0.002em);
+	--tail: calc(var(--length) / 4);
+	--tail-end-length: 0;
+	--tail-end-width: 0;
+	--center-size: calc(var(--width) * 2);
+
+	z-index: var(--z-height);
+	filter: drop-shadow(var(--shadow-offset) var(--shadow-offset) var(--shadow-spread) hsl(0deg 0% 0% / 0.15));
 
 	&.hour {
 		--width: 0.3em;
 		--length: 2.4em;
 		--rotation: var(--hour-rotation);
-		--shadow-offset: 0.1em;
+		--z-height: 10;
 	}
 
 	&.minute {
 		--width: 0.22em;
 		--length: calc(var(--radius) - var(--tick-height));
 		--rotation: var(--minute-rotation);
-		--shadow-offset: 0.1em;
+		--z-height: 11;
 	}
 
 	&.second {
 		--width: 0.1em;
 		--length: calc(var(--radius) - var(--tick-height) * 2);
-		--color: #e74c3c;
+		--color: #d43c2b;
 		--rotation: var(--second-rotation);
-		--shadow-offset: 0.14em;
+		--z-height: 18;
+		--tail: calc(var(--length) / 3);
+		--center-size: calc(var(--width) * 3);
+		--tail-end-length: 0.6em;
+		--tail-end-width: 0.2em;
+	}
+
+	:is(.head, .tail) {
+		position: absolute;
+		inset: 50%;
+		transition: transform 0.2s ease-out;
+		transform: translate(-50%) rotate(var(--rotation));
+
+		&::before, &::after {
+			position: absolute;
+			content: '';
+			width: var(--width);
+			background: var(--color);
+
+			transform-origin: bottom center;
+			left: 50%;
+			bottom: 50%;
+		}
+	}
+
+	.head {
+		&::before {
+			transform: translateX(-50%);
+			height: var(--length);
+		}
+	}
+
+	.tail {
+		&::before, &::after {
+			transform: translate(-50%) rotate(180deg);
+		}
+
+		&::before {
+			height: var(--tail);
+		}
+
+		&::after {
+			height: var(--tail-end-length);
+			width: var(--tail-end-width);
+			transform: translate(-50%, calc(var(--tail) - var(--tail-end-length))) rotate(180deg);
+		}
+	}
+
+	.center {
+		position: absolute;
+		inset: 50%;
+		width: var(--center-size);
+		height: var(--center-size);
+		background: var(--color);
+		border-radius: 50%;
+		transform: translate(-50%, -50%);
 	}
 }
 
-.center {
+.pin {
 	position: absolute;
-	--shadow-offset: 0.1em;
 	inset: 50%;
-	--size: 0.8em;
+	transform: translate(-50%, -50%);
+	z-index: 100;
+	--size: 0.18em;
 	width: var(--size);
 	height: var(--size);
-	background: #333;
+	background: #eee;
 	border-radius: 50%;
-	transform: translate(-50%, -50%);
-	z-index: 6;
 }
 
 .sr-only {

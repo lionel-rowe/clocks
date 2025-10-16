@@ -1,6 +1,16 @@
+import { assert } from '@std/assert/assert'
+
 /**
- * Always goes up, for smooth circular animation with no skipping
+ * For smooth circular animation with no skipping
  */
-export function nextIncrement({ n, prev, cycle }: { n: number; prev: number; cycle: number }) {
-	return prev + ((n + cycle - (prev % cycle)) % cycle)
+export function advance({ target, current, cycle }: { target: number; current: number; cycle: number }) {
+	assert(Number.isSafeInteger(cycle) && cycle > 0, 'Cycle must be a positive integer')
+
+	const currentProgress = modulo(current, cycle)
+	const currentCycleStart = cycle - currentProgress
+	return current + modulo(target + currentCycleStart, cycle)
+}
+
+export function modulo(n: number, m: number) {
+	return ((n % m) + m) % m
 }

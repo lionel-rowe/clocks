@@ -10,27 +10,62 @@
 		<main>
 			<!-- <h1>Clocks</h1> -->
 			<div class="container">
-				<analog-clock tz="Asia/Shanghai"></analog-clock>
+				<div>
+					<tz-clock-analog tz="Asia/Shanghai"></tz-clock-analog>
+				</div>
+				<div>
+					<tz-clock-digital tz="Asia/Shanghai"></tz-clock-digital>
+				</div>
 				<!-- <analog-clock tz="UTC"></analog-clock> -->
 			</div>
 		</main>
 
-		<template id="analog-clock-template">
+		<template id="tz-clock-digital-template">
 			<link rel="stylesheet" href="static/analog-clock.css">
-			<time class="sr-only" datetime="12:00:00"></time>
+			<time></time>
+		</template>
+		<template id="tz-clock-analog-template">
+			<link rel="stylesheet" href="static/analog-clock.css">
+			<time class="sr-only"></time>
 			<div class="clock" aria-hidden="true">
 				<div class="inner"></div>
 				<div class="frame-inner">
 					<div class="face">
+						<div class="glass"></div>
 						<div class="ticks minor"></div>
 						<div class="ticks major"></div>
+						<div class="pin"></div>
 						<div class="ring"></div>
-						<div class="numbers"></div>
+						<div class="numbers">
+							<span class="number" style="--n: 1"></span>
+							<span class="number" style="--n: 2"></span>
+							<span class="number" style="--n: 3"></span>
+							<span class="number" style="--n: 4"></span>
+							<span class="number" style="--n: 5"></span>
+							<span class="number" style="--n: 6"></span>
+							<span class="number" style="--n: 7"></span>
+							<span class="number" style="--n: 8"></span>
+							<span class="number" style="--n: 9"></span>
+							<span class="number" style="--n: 10"></span>
+							<span class="number" style="--n: 11"></span>
+							<span class="number" style="--n: 12"></span>
+						</div>
 						<div class="hands">
-							<div class="hand hour"></div>
-							<div class="hand minute"></div>
-							<div class="hand second"></div>
-							<div class="center"></div>
+							<div class="hand hour">
+								<div class="head"></div>
+								<div class="center"></div>
+								<div class="tail"></div>
+							</div>
+							<div class="hand minute">
+								<div class="head"></div>
+								<div class="center"></div>
+								<div class="tail"></div>
+							</div>
+							<div class="hand second">
+								<div class="head"></div>
+								<div class="center"></div>
+								<div class="tail"></div>
+							</div>
 						</div>
 					</div>
 				</div>
