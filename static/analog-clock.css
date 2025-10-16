@@ -6,21 +6,24 @@
 	--seconds: 0;
 
 	/* 30 degrees per hour + minute adjustment */
-	--hour-rotation: calc(var(--hours) * 30deg + var(--minutes) * 0.5deg);
+	--hour-rotation: calc(var(--hours) * 30deg + mod(var(--minutes), 60) * 0.5deg);
 	/* 6 degrees per minute */
-	--minute-rotation: calc(var(--minutes) * 6deg);
+	--minute-rotation: calc(var(--minutes) * 6deg + mod(var(--seconds), 60) * 0.1deg);
 	/* 6 degrees per second */
 	--second-rotation: calc(var(--seconds) * 6deg);
 
-	/* All other measurements must be in `em` or other units to remain relative to the root `font-size` */
-	--font-size: 2rem;
+	/**
+	 * - All other measurements must be in `em` or other units to remain relative to the root `font-size`
+	 * - Inner elements should not set their own font-size
+	 */
+	--font-size: 1rem;
 	font-size: var(--font-size);
-	
-	--size: 5em;
-	--tick-height: 0.15em;
 
-	--frame-outer-width: 0.15em;
-	--frame-inner-width: 0.08em;
+	--size: 10em;
+	--tick-height: 0.3em;
+
+	--frame-outer-width: 0.35em;
+	--frame-inner-width: 0.2em;
 	--frame-width: calc(var(--frame-outer-width) + var(--frame-inner-width));
 }
 
@@ -37,8 +40,29 @@
 	height: var(--size);
 	border-radius: 50%;
 	position: relative;
-	box-shadow: 0 0.1em 0.2em rgba(0, 0, 0, 0.1);
+
+	--shadow-offset: 0.1em;
 	background: #aaa;
+
+	box-shadow:
+		var(--shadow-offset) var(--shadow-offset) 0.2em hsl(0deg 0% 0% / 0.3),
+		inset -0.125em -0.0625em 0 0 #1e1e1e,
+		inset -0.0625em 0.125em 0.0625em 0 #cccccc,
+		inset -0.1875em -0.25em 0 0 #3d3d3d,
+		inset 0.375em -0.3125em 0 0 #aaaaaa,
+		inset -0.6875em -0.25em 0 -0.5em #dddddd,
+		inset -0.4375em -0.375em 0 0 #666666,
+		inset -0.375em 0.1875em 0 0 #ffffff,
+		inset 0.3125em 0.3125em 0 0 #ffffff;
+}
+
+.inner {
+	z-index: 1;
+	position: absolute;
+	inset: var(--frame-outer-width);
+	border-radius: 50%;
+	--shadow-offset: 0.2em;
+	box-shadow: inset var(--shadow-offset) var(--shadow-offset) 0.6em hsl(0deg 0% 0% / 0.9);
 }
 
 .frame-inner {
@@ -48,12 +72,6 @@
 	background: #333;
 	border-radius: 50%;
 }
-/* .frame-inner {
-	position: absolute;
-	inset: var(--frame-inner-width);
-	background: blue;
-	border-radius: 50%;
-} */
 
 .face {
 	position: absolute;
@@ -62,7 +80,6 @@
 
 	--radius: calc(var(--size) / 2 - var(--frame-width));
 
-	/* background: antiquewhite; */
 	background: white;
 	border-radius: 50%;
 }
@@ -82,12 +99,12 @@
 	counter-increment: clock;
 	position: absolute;
 	text-align: center;
-	line-height: 0.5em;
+	line-height: 1em;
 	font-weight: bold;
 	color: #333;
 
-	--inset: 1.2em;
-	--letter-spacing: -0.1em;
+	--inset: 2.4em;
+	--letter-spacing: -0.2em;
 
 	transform: translate(-50%, -50%) rotate(calc(var(--n) * 30deg + 180deg))
 		translateY(calc(var(--radius) - calc(var(--inset) / 2))) rotate(calc(var(--n) * -30deg)) rotate(180deg)
@@ -100,7 +117,7 @@
 
 	&::after {
 		content: counter(clock);
-		font-size: 0.8em;
+		font-size: 1.4em;
 	}
 }
 
@@ -127,7 +144,7 @@
 
 	&.major {
 		--n: 12;
-		--tick-width: 0.6deg;
+		--tick-width: 1.5deg;
 		--tick-color: #888;
 	}
 
@@ -141,47 +158,64 @@
 .ring {
 	position: absolute;
 	inset: var(--tick-height);
-	border: 0.02em solid #888;
+	border: 0.04em solid #888;
 	border-radius: 50%;
 	box-sizing: border-box;
 }
 
+.hand, .center {
+	filter: drop-shadow(var(--shadow-offset) var(--shadow-offset) 0.02em hsl(0deg 0% 0% / 0.2));
+}
+
 .hand {
 	position: absolute;
-	left: 50%;
-	bottom: 50%;
-	transform-origin: bottom center;
-	transition: transform 0.2s ease-out;
-	transform: translateX(-50%) rotate(var(--rotation));
-	height: var(--length);
+	inset: 0;
+	--color: #333;
+
+	&::after {
+		position: absolute;
+		content: '';
+		left: 50%;
+		bottom: 50%;
+		transform-origin: bottom center;
+		transition: transform 0.2s ease-out;
+		transform: translateX(-50%) rotate(var(--rotation));
+		height: var(--length);
+		width: var(--width);
+		width: var(--width);
+		background: var(--color);
+	}
 
 	&.hour {
-		width: 0.1em;
-		--length: 1.2em;
-		background: #333;
+		--width: 0.3em;
+		--length: 2.4em;
 		--rotation: var(--hour-rotation);
+		--shadow-offset: 0.1em;
 	}
 
 	&.minute {
-		width: 0.075em;
+		--width: 0.22em;
 		--length: calc(var(--radius) - var(--tick-height));
-		background: #333;
 		--rotation: var(--minute-rotation);
+		--shadow-offset: 0.1em;
 	}
 
 	&.second {
-		width: 0.03em;
-		--length: calc(var(--radius) - var(--tick-height));
-		background: #e74c3c;
+		--width: 0.1em;
+		--length: calc(var(--radius) - var(--tick-height) * 2);
+		--color: #e74c3c;
 		--rotation: var(--second-rotation);
+		--shadow-offset: 0.14em;
 	}
 }
 
 .center {
 	position: absolute;
+	--shadow-offset: 0.1em;
 	inset: 50%;
-	width: 0.3em;
-	height: 0.3em;
+	--size: 0.8em;
+	width: var(--size);
+	height: var(--size);
 	background: #333;
 	border-radius: 50%;
 	transform: translate(-50%, -50%);
@@ -197,5 +231,5 @@
 	overflow: hidden;
 	clip: rect(0, 0, 0, 0);
 	white-space: nowrap;
-	border: 0;
+	border: none;
 }
