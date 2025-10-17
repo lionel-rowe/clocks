@@ -5,21 +5,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Clocks</title>
 		<link rel="stylesheet" href="/static/styles.css">
-	</head>
-	<body>
-		<main>
-			<!-- <h1>Clocks</h1> -->
-			<div class="container">
-				<div>
-					<tz-clock-analog></tz-clock-analog>
-				</div>
-				<div>
-					<tz-clock-digital></tz-clock-digital>
-				</div>
-				<!-- <tz-clock-analog time="UTC"></tz-clock-analog> -->
-			</div>
-		</main>
-
 		<template id="tz-clock-digital-template">
 			<link rel="stylesheet" href="/static/analog-clock.css">
 			<time></time>
@@ -67,11 +52,28 @@
 								<div class="tail-end"></div>
 							</div>
 						</div>
+						<div class="gloss"></div>
 					</div>
 				</div>
 			</div>
 		</template>
-
+	</head>
+	<body>
+		<main>
+			<!-- <h1>Clocks</h1> -->
+			<div class="container">
+				<tz-clock-analog></tz-clock-analog>
+				<tz-clock-analog time="Africa/Algiers" gloss="Algiers"></tz-clock-analog>
+				<tz-clock-analog time="America/Mexico_City" gloss="Mexico City"></tz-clock-analog>
+				<tz-clock-analog time="Asia/Shanghai" gloss="Shanghai"></tz-clock-analog>
+				<tz-clock-analog time="Europe/London" gloss="London"></tz-clock-analog>
+				<tz-clock-analog time="Europe/Paris" gloss="Paris"></tz-clock-analog>
+				<div>
+					<tz-clock-digital></tz-clock-digital>
+				</div>
+				<!-- <tz-clock-analog time="UTC"></tz-clock-analog> -->
+			</div>
+		</main>
 		<script type="module" src="/dist/main.js"></script>
 	</body>
 </html>

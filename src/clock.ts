@@ -13,10 +13,25 @@ const resolvedDateTimeOptions = new Intl.DateTimeFormat().resolvedOptions()
 const defaults: Record<ObservedAttribute, string> = {
 	locale: resolvedDateTimeOptions.locale,
 	time: resolvedDateTimeOptions.timeZone,
+	gloss: new Intl.DateTimeFormat(resolvedDateTimeOptions.locale, {
+		timeZoneName: 'long',
+		timeZone: resolvedDateTimeOptions.timeZone,
+	}).formatToParts(new Date())
+		.find((x) => x.type === 'timeZoneName')!.value,
+}
+
+const SWITCH_HOUR = 8
+/**
+ * 8am and later is day time
+ * 8pm and later is night time
+ */
+function isDayTime(zdt: Temporal.ZonedDateTime): boolean {
+	const hour = zdt.hour
+	return hour >= SWITCH_HOUR && hour < SWITCH_HOUR + 12
 }
 
 type ObservedAttribute = typeof observedAttributes[number]
-const observedAttributes = ['time', 'locale'] as const
+const observedAttributes = ['time', 'locale', 'gloss'] as const
 
 type RunningTimeState = {
 	kind: 'running'
@@ -108,6 +123,14 @@ abstract class Clock extends HTMLElement {
 	get paused() {
 		return this.#timeState.kind === 'paused'
 	}
+	#gloss = defaults.gloss
+	get gloss() {
+		return this.#gloss
+	}
+	set gloss(v) {
+		this.#gloss = v
+		this.title = v
+	}
 
 	#updateState(state: TimeState): Promise<void> {
 		return new Promise((res) => {
@@ -175,6 +198,10 @@ class AnalogClock extends Clock {
 		clock.style.setProperty('--minutes', this.#minutes.toString())
 		clock.style.setProperty('--seconds', this.#seconds.toString())
 
+		this.style.colorScheme = isDayTime(zdt) ? 'light' : 'dark'
+		this.shadowRoot.querySelector('.gloss')!.textContent = this.gloss
+		this.title = this.gloss
+
 		// Update the machine-readable time for screen readers and other assistive tech
 		const time = this.shadowRoot.querySelector('time')
 		assert(time instanceof HTMLTimeElement)
@@ -191,6 +218,7 @@ class DigitalClock extends Clock {
 		assert(time instanceof HTMLTimeElement)
 		time.dateTime = zdt.toString()
 		time.textContent = zdt.toLocaleString(this.locale)
+		this.title = this.gloss
 	}
 }
 
