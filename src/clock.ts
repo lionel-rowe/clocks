@@ -5,11 +5,18 @@ import { runEvery } from './runEvery.ts'
 
 type TimeoutLike = { valueOf(): number }
 
-// https://fonts.google.com/specimen/Poiret+One
+// https://fonts.google.com/specimen/Poiret+One?preview.text=1+2+3+4+5+6+7+8+9+10+11+12
 // https://openfontlicense.org/open-font-license-official-text/
 document.fonts.add(new FontFace('Poiret One', 'url(/static/PoiretOne-Regular-subset.ttf) format("TrueType")'))
 
-const defaults = new Intl.DateTimeFormat().resolvedOptions()
+const resolvedDateTimeOptions = new Intl.DateTimeFormat().resolvedOptions()
+const defaults: Record<ObservedAttribute, string> = {
+	locale: resolvedDateTimeOptions.locale,
+	time: resolvedDateTimeOptions.timeZone,
+}
+
+type ObservedAttribute = typeof observedAttributes[number]
+const observedAttributes = ['time', 'locale'] as const
 
 type RunningTimeState = {
 	kind: 'running'
@@ -24,7 +31,6 @@ type PausedTimeState = {
 type TimeState = RunningTimeState | PausedTimeState
 
 abstract class Clock extends HTMLElement {
-	#timeState: TimeState = { kind: 'running', timeZone: defaults.timeZone, serialized: defaults.timeZone }
 	#_timeout: TimeoutLike = -1
 	get #timeout() {
 		return this.#_timeout
@@ -72,29 +78,32 @@ abstract class Clock extends HTMLElement {
 		this.#pause()
 	}
 
-	static readonly observedAttributes = ['time', 'locale'] as const
+	static readonly observedAttributes = observedAttributes
 	attributeChangedCallback(
-		name: typeof Clock['observedAttributes'][number],
+		name: ObservedAttribute,
 		oldValue: string | null,
 		newValue: string | null,
 	) {
 		if (newValue === oldValue) return
-		this[name] = newValue ?? this[name]
+		this[name] = newValue ?? defaults[name]
 	}
 
+	#timeState: TimeState = this.#toValidTimeState(defaults.time)
 	get time() {
 		return this.#timeState.serialized
 	}
+	/** @throws {RangeError} if set to an invalid time zone or zoned datetime */
 	set time(v) {
 		this.#timeState = this.#toValidTimeState(v)
 		this.#updateState(this.#timeState)
 	}
-	#locale = defaults.locale
+	#locale = new Intl.Locale(defaults.locale)
 	get locale() {
-		return this.#locale
+		return this.#locale.toString()
 	}
+	/** @throws {RangeError} if set to an invalid locale */
 	set locale(v) {
-		this.#locale = this.#toValidLocale(v)
+		this.#locale = this.#toLocale(v)
 	}
 	get paused() {
 		return this.#timeState.kind === 'paused'
@@ -125,26 +134,20 @@ abstract class Clock extends HTMLElement {
 		this.#timeout = -1
 	}
 
+	/** @throws {RangeError} if input is not a valid time zone or zoned datetime */
 	#toValidTimeState(input: string): TimeState {
-		try {
-			if (input.includes(':')) {
-				const zdt = Temporal.ZonedDateTime.from(input)
-				return { kind: 'paused', time: zdt, serialized: zdt.toString() }
-			} else {
-				const zdt = Temporal.Now.zonedDateTimeISO(input)
-				return { kind: 'running', timeZone: zdt.timeZoneId, serialized: zdt.timeZoneId }
-			}
-		} catch {
-			return { kind: 'running', timeZone: defaults.timeZone, serialized: defaults.timeZone }
+		if (input.includes(':')) {
+			const zdt = Temporal.ZonedDateTime.from(input)
+			return { kind: 'paused', time: zdt, serialized: zdt.toString() }
+		} else {
+			const zdt = Temporal.Now.zonedDateTimeISO(input)
+			return { kind: 'running', timeZone: zdt.timeZoneId, serialized: zdt.timeZoneId }
 		}
 	}
 
-	#toValidLocale(input: string): string {
-		try {
-			return new Intl.Locale(input).toString()
-		} catch {
-			return defaults.locale
-		}
+	/** @throws {RangeError} if input is not a valid locale */
+	#toLocale(input: string): Intl.Locale {
+		return new Intl.Locale(input)
 	}
 }
 
