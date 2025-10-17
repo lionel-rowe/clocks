@@ -5,25 +5,17 @@
 :host {
 	display: inline-flex;
 
-	--hours: 0;
-	--minutes: 0;
-	--seconds: 0;
-
-	/* 30 degrees per hour + minute adjustment */
-	--hour-rotation: calc(var(--hours) * 30deg + mod(var(--minutes), 60) * 0.5deg);
-	/* 6 degrees per minute */
-	--minute-rotation: calc(var(--minutes) * 6deg + mod(var(--seconds), 60) * 0.1deg);
-	/* 6 degrees per second */
-	--second-rotation: calc(var(--seconds) * 6deg);
-
 	--size: 10em;
 	--tick-height: 0.3em;
-
 	--frame-outer-width: 0.35em;
 	--frame-inner-width: 0.2em;
 
-	--frame-width: calc(var(--frame-outer-width) + var(--frame-inner-width));
-	--radius: calc(var(--size) / 2 - var(--frame-width));
+	--second-hand-color: #d43c2b;
+	/* --second-hand-color: #3775ff; */
+}
+
+:host(.no-second-hand) {
+	--second-hand-color: transparent;
 }
 
 * {
@@ -35,12 +27,27 @@
 	justify-content: center;
 	align-items: center;
 
+	--hours: 0;
+	--minutes: 0;
+	--seconds: 0;
+
+	/* 30 degrees per hour + minute adjustment */
+	--hour-rotation: calc(var(--hours) * 30deg + mod(var(--minutes), 60) * 0.5deg);
+	/* 6 degrees per minute */
+	--minute-rotation: calc(var(--minutes) * 6deg + mod(var(--seconds), 60) * 0.1deg);
+	/* 6 degrees per second */
+	--second-rotation: calc(var(--seconds) * 6deg);
+
+	--frame-width: calc(var(--frame-outer-width) + var(--frame-inner-width));
+	--radius: calc(var(--size) / 2 - var(--frame-width));
+
 	width: var(--size);
 	height: var(--size);
 	border-radius: 50%;
 	position: relative;
 
 	--shadow-offset: 0.1em;
+	border: 0.01em solid black;
 	background: #aaa;
 
 	/* https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_backgrounds_and_borders/Box-shadow_generator */
@@ -99,6 +106,10 @@
 	width: 100%;
 	height: 100%;
 	font-family: 'Poiret One', sans-serif;
+	pointer-events: none;
+	> * {
+		pointer-events: auto;
+	}
 }
 
 .number {
@@ -152,13 +163,13 @@
 	&.major {
 		--n: 12;
 		--tick-width: 1.5deg;
-		--tick-color: #888;
+		--tick-color: #4e4e4e;
 	}
 
 	&.minor {
 		--n: 60;
 		--tick-width: 0.5deg;
-		--tick-color: #bbb;
+		--tick-color: #797979;
 	}
 }
 
@@ -174,6 +185,9 @@
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
+	> * {
+		pointer-events: auto;
+	}
 
 	--color: #262626;
 	--taper: 20%;
@@ -186,6 +200,8 @@
 
 	z-index: var(--z-height);
 	filter: drop-shadow(var(--shadow-offset) var(--shadow-offset) var(--shadow-spread) hsl(0deg 0% 0% / 0.15));
+
+	--transition: transform 1s;
 
 	&.hour {
 		--width: 0.3em;
@@ -204,14 +220,14 @@
 	&.second {
 		--width: 0.1em;
 		--length: calc(var(--radius) - var(--tick-height) * 2);
-		--color: #d43c2b;
+		--color: var(--second-hand-color);
 		--rotation: var(--second-rotation);
 		--z-height: 18;
 		--tail: calc(var(--length) / 3);
 		--center-size: calc(var(--width) * 3);
 		--tail-end-length: 0.6em;
 		--tail-end-width: 0.2em;
-		--transition: transform 0.1s ease-out;
+		--transition: transform 0.2s ease-out;
 	}
 
 	:is(.head, .tail-end) {

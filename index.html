@@ -4,28 +4,28 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Clocks</title>
-		<link rel="stylesheet" href="static/styles.css">
+		<link rel="stylesheet" href="/static/styles.css">
 	</head>
 	<body>
 		<main>
 			<!-- <h1>Clocks</h1> -->
 			<div class="container">
 				<div>
-					<tz-clock-analog tz="Asia/Shanghai"></tz-clock-analog>
+					<tz-clock-analog></tz-clock-analog>
 				</div>
 				<div>
-					<tz-clock-digital tz="Asia/Shanghai"></tz-clock-digital>
+					<tz-clock-digital></tz-clock-digital>
 				</div>
-				<!-- <tz-clock-analog tz="UTC"></tz-clock-analog> -->
+				<!-- <tz-clock-analog time="UTC"></tz-clock-analog> -->
 			</div>
 		</main>
 
 		<template id="tz-clock-digital-template">
-			<link rel="stylesheet" href="static/analog-clock.css">
+			<link rel="stylesheet" href="/static/analog-clock.css">
 			<time></time>
 		</template>
 		<template id="tz-clock-analog-template">
-			<link rel="stylesheet" href="static/analog-clock.css">
+			<link rel="stylesheet" href="/static/analog-clock.css">
 			<time class="sr-only"></time>
 			<div class="clock" aria-hidden="true">
 				<div class="inner"></div>
@@ -72,6 +72,6 @@
 			</div>
 		</template>
 
-		<script type="module" src="./dist/main.js"></script>
+		<script type="module" src="/dist/main.js"></script>
 	</body>
 </html>

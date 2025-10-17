@@ -1,8 +1,6 @@
 import { assert } from '@std/assert/assert'
 
-/**
- * For smooth circular animation with no skipping
- */
+/** For smooth circular animation with no skipping */
 export function advance({ target, current, cycle }: { target: number; current: number; cycle: number }) {
 	assert(Number.isSafeInteger(cycle) && cycle > 0, 'Cycle must be a positive integer')
 
