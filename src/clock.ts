@@ -1,5 +1,6 @@
 import 'temporal-polyfill/global'
 import { assert } from '@std/assert/assert'
+import { delay } from '@std/async/delay'
 import { advance } from './utils.ts'
 import { runEvery } from './runEvery.ts'
 
@@ -190,7 +191,10 @@ class AnalogClock extends Clock {
 
 	constructor() {
 		super()
-		this.resources.push(document.fonts.load('1em "Poiret One"'))
+		this.resources.push(Promise.race([
+			document.fonts.load('1em "Poiret One"'),
+			delay(5_000),
+		]))
 
 		const $clock = this.shadowRoot.querySelector('.clock')
 		assert($clock instanceof HTMLElement)

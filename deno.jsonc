@@ -5,6 +5,7 @@
 	},
 	"imports": {
 		"@std/assert": "jsr:@std/assert@^1.0.15",
+		"@std/async": "jsr:@std/async@^1.0.15",
 		"temporal-polyfill": "npm:temporal-polyfill@^0.3.0"
 	},
 	"fmt": {
