@@ -46,7 +46,14 @@ type PausedTimeState = {
 type TimeState = RunningTimeState | PausedTimeState
 
 abstract class Clock extends HTMLElement {
+	protected static get TEMPLATE_ID(): string {
+		// runtime workaround for lack of `static abstract` properties
+		// https://github.com/microsoft/TypeScript/issues/34516
+		throw new Error('abstract `TEMPLATE_ID` must be overridden in subclass')
+	}
+
 	#_timeout: TimeoutLike = -1
+	#initialDisplay: string
 	get #timeout() {
 		return this.#_timeout
 	}
@@ -56,7 +63,6 @@ abstract class Clock extends HTMLElement {
 	}
 
 	declare shadowRoot: ShadowRoot
-	protected abstract TEMPLATE_ID: string
 
 	protected abstract updateUi(zdt: Temporal.ZonedDateTime): void
 
@@ -68,25 +74,22 @@ abstract class Clock extends HTMLElement {
 	constructor() {
 		super()
 		this.attachShadow({ mode: 'open' })
+
+		const $template = document.getElementById(new.target.TEMPLATE_ID)
+		assert($template instanceof HTMLTemplateElement)
+		const templateContent = $template.content
+
+		this.#initialDisplay = this.style.display
+		this.style.display = 'none'
+
+		this.shadowRoot.append(templateContent.cloneNode(true))
 	}
 
 	connectedCallback() {
-		if (!this.shadowRoot.childElementCount) {
-			const template = document.getElementById(this.TEMPLATE_ID)
-			assert(template instanceof HTMLTemplateElement)
-			const templateContent = template.content
-
-			const initialDisplay = this.style.display
-			this.style.display = 'none'
-
-			this.shadowRoot.append(templateContent.cloneNode(true))
-			this.resources.push(this.#updateState(this.#timeState))
-
-			this.#ready.then(() => {
-				this.style.display = initialDisplay
-				if (this.style.cssText === '') this.removeAttribute('style')
-			})
-		}
+		Promise.all([this.#ready, this.#updateState(this.#timeState)]).then(() => {
+			this.style.display = this.#initialDisplay
+			if (this.style.cssText === '') this.removeAttribute('style')
+		})
 	}
 
 	disconnectedCallback() {
@@ -103,13 +106,13 @@ abstract class Clock extends HTMLElement {
 		this[name] = newValue ?? defaults[name]
 	}
 
-	#timeState: TimeState = this.#toValidTimeState(defaults.time)
+	#timeState: TimeState = this.#getTimeStateOrThrow(defaults.time)
 	get time() {
 		return this.#timeState.serialized
 	}
 	/** @throws {RangeError} if set to an invalid time zone or zoned datetime */
 	set time(v) {
-		this.#timeState = this.#toValidTimeState(v)
+		this.#timeState = this.#getTimeStateOrThrow(v)
 		this.#updateState(this.#timeState)
 	}
 	#locale = new Intl.Locale(defaults.locale)
@@ -118,7 +121,7 @@ abstract class Clock extends HTMLElement {
 	}
 	/** @throws {RangeError} if set to an invalid locale */
 	set locale(v) {
-		this.#locale = this.#toLocale(v)
+		this.#locale = this.#getLocaleOrThrow(v)
 	}
 	get paused() {
 		return this.#timeState.kind === 'paused'
@@ -158,7 +161,7 @@ abstract class Clock extends HTMLElement {
 	}
 
 	/** @throws {RangeError} if input is not a valid time zone or zoned datetime */
-	#toValidTimeState(input: string): TimeState {
+	#getTimeStateOrThrow(input: string): TimeState {
 		if (input.includes(':')) {
 			const zdt = Temporal.ZonedDateTime.from(input)
 			return { kind: 'paused', time: zdt, serialized: zdt.toString() }
@@ -169,55 +172,66 @@ abstract class Clock extends HTMLElement {
 	}
 
 	/** @throws {RangeError} if input is not a valid locale */
-	#toLocale(input: string): Intl.Locale {
+	#getLocaleOrThrow(input: string): Intl.Locale {
 		return new Intl.Locale(input)
 	}
 }
 
 class AnalogClock extends Clock {
-	protected override TEMPLATE_ID = 'tz-clock-analog-template'
-
-	constructor() {
-		super()
-		this.resources.push(document.fonts.load('1em "Poiret One"'))
-	}
+	protected static override readonly TEMPLATE_ID = 'tz-clock-analog-template'
 
 	#hours = 0
 	#minutes = 0
 	#seconds = 0
+
+	#$clock: HTMLElement
+	#$gloss: HTMLElement
+	#$time: HTMLTimeElement
+
+	constructor() {
+		super()
+		this.resources.push(document.fonts.load('1em "Poiret One"'))
+
+		const $clock = this.shadowRoot.querySelector('.clock')
+		assert($clock instanceof HTMLElement)
+		const $gloss = this.shadowRoot.querySelector('.gloss')
+		assert($gloss instanceof HTMLElement)
+		const $time = this.shadowRoot.querySelector('time')
+		assert($time instanceof HTMLTimeElement)
+
+		this.#$clock = $clock
+		this.#$gloss = $gloss
+		this.#$time = $time
+	}
 
 	protected override updateUi(zdt: Temporal.ZonedDateTime) {
 		this.#hours = advance({ target: zdt.hour, current: this.#hours, cycle: 24 })
 		this.#minutes = advance({ target: zdt.minute, current: this.#minutes, cycle: 60 })
 		this.#seconds = advance({ target: zdt.second, current: this.#seconds, cycle: 60 })
 
-		const clock = this.shadowRoot.querySelector('.clock')
-		assert(clock instanceof HTMLElement)
+		this.#$clock.style.setProperty('--hours', this.#hours.toString())
+		this.#$clock.style.setProperty('--minutes', this.#minutes.toString())
+		this.#$clock.style.setProperty('--seconds', this.#seconds.toString())
 
-		clock.style.setProperty('--hours', this.#hours.toString())
-		clock.style.setProperty('--minutes', this.#minutes.toString())
-		clock.style.setProperty('--seconds', this.#seconds.toString())
-
-		this.style.colorScheme = isDayTime(zdt) ? 'light' : 'dark'
-		this.shadowRoot.querySelector('.gloss')!.textContent = this.gloss
+		this.dataset.timeOfDay = isDayTime(zdt) ? 'day' : 'night'
+		this.#$gloss.textContent = this.gloss
 		this.title = this.gloss
 
 		// Update the machine-readable time for screen readers and other assistive tech
-		const time = this.shadowRoot.querySelector('time')
-		assert(time instanceof HTMLTimeElement)
-		time.dateTime = zdt.toString()
-		time.textContent = zdt.toLocaleString(this.locale)
+		this.#$time.dateTime = zdt.toString()
+		this.#$time.textContent = zdt.toLocaleString(this.locale)
 	}
 }
 
 class DigitalClock extends Clock {
-	protected override TEMPLATE_ID = 'tz-clock-digital-template'
+	protected static override readonly TEMPLATE_ID = 'tz-clock-digital-template'
+
 	protected override updateUi(zdt: Temporal.ZonedDateTime) {
 		// Update the machine-readable time for screen readers and other assistive tech
-		const time = this.shadowRoot.querySelector('time')
-		assert(time instanceof HTMLTimeElement)
-		time.dateTime = zdt.toString()
-		time.textContent = zdt.toLocaleString(this.locale)
+		const $time = this.shadowRoot.querySelector('time')
+		assert($time instanceof HTMLTimeElement)
+		$time.dateTime = zdt.toString()
+		$time.textContent = zdt.toLocaleString(this.locale)
 		this.title = this.gloss
 	}
 }

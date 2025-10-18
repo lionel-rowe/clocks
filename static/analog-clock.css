@@ -10,17 +10,22 @@
 	--frame-outer-width: 0.35em;
 	--frame-inner-width: 0.2em;
 
-	color-scheme: light;
+	--text-color: #262626;
+	--face-color: #fffaf0;
+	--second-hand-color: #d43c2b;
+	--glass-sheen: 0.3;
 
-	--text-color: light-dark(#262626, #ffffff);
-	--face-color: light-dark(#fffaf0, #0f0f0f);
-	--second-hand-color: light-dark(#d43c2b, #03a9f4);
-	--glass-sheen: light-dark(0.3, 0.15);
-}
+	&:host([data-time-of-day='night']) {
+		--text-color: #ffffff;
+		--face-color: #0f0f0f;
+		--second-hand-color: #03a9f4;
+		--glass-sheen: 0.15;
+	}
 
-:host(.no-second-hand) {
-	.hand.second {
-		display: none;
+	&:host(.no-second-hand) {
+		.hand.second {
+			display: none;
+		}
 	}
 }
 
