@@ -1,3 +1,7 @@
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
 /**
  * - All measurements must be in `em` or other relative units to remain relative to the root `font-size`
  * - Inner elements should not set their own font-size
@@ -10,16 +14,18 @@
 	--frame-outer-width: 0.35em;
 	--frame-inner-width: 0.2em;
 
-	--text-color: #262626;
 	--face-color: #fffaf0;
+	--detail-color: #262626;
 	--second-hand-color: #d43c2b;
 	--glass-sheen: 0.3;
+	--rim-color: #888;
 
 	&:host([data-time-of-day='night']) {
-		--text-color: #ffffff;
 		--face-color: #0f0f0f;
+		--detail-color: #ffffff;
 		--second-hand-color: #03a9f4;
 		--glass-sheen: 0.15;
+		--rim-color: #888;
 	}
 
 	&:host(.no-second-hand) {
@@ -27,10 +33,6 @@
 			display: none;
 		}
 	}
-}
-
-* {
-	box-sizing: border-box;
 }
 
 .clock {
@@ -59,19 +61,20 @@
 
 	--shadow-offset: 0.1em;
 	border: 0.01em solid black;
-	background: #aaa;
+
+	background: hsl(from var(--rim-color) h s 67%);
 
 	/* https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_backgrounds_and_borders/Box-shadow_generator */
 	box-shadow:
 		var(--shadow-offset) var(--shadow-offset) 0.2em hsl(0deg 0% 0% / 0.3),
-		inset -0.125em -0.0625em 0 0 #1e1e1e,
-		inset -0.0625em 0.125em 0.0625em 0 #cccccc,
-		inset -0.1875em -0.25em 0 0 #3d3d3d,
-		inset 0.2em -0.3125em 0 0 #aaaaaa,
-		inset -0.6875em -0.25em 0 -0.5em #dddddd,
-		inset -0.4375em -0.375em 0 0 #666666,
-		inset -0.375em 0.1875em 0 0 #ffffff,
-		inset 0.3125em 0.3125em 0 0 #ffffff;
+		inset -0.125em -0.0625em 0 0 hsl(from var(--rim-color) h s 12%),
+		inset -0.0625em 0.125em 0 0 hsl(from var(--rim-color) h s 80%),
+		inset -0.1875em -0.25em 0 0 hsl(from var(--rim-color) h s 24%),
+		inset 0.2em -0.3125em 0 0 hsl(from var(--rim-color) h s 67%),
+		inset -0.6875em -0.25em 0 0 hsl(from var(--rim-color) h s 87%),
+		inset -0.4375em -0.375em 0 0 hsl(from var(--rim-color) h s 30%),
+		inset -0.375em 0.1875em 0 0 hsl(from var(--rim-color) h s 99%),
+		inset 0.3125em 0.3125em 0 0 hsl(from var(--rim-color) h s 99%);
 }
 
 .inner {
@@ -88,7 +91,7 @@
 	position: absolute;
 	inset: var(--frame-outer-width);
 
-	background: var(--text-color);
+	background: var(--detail-color);
 	border-radius: 50%;
 }
 
@@ -129,7 +132,7 @@
 	text-align: center;
 	line-height: 1em;
 	font-weight: bold;
-	color: var(--text-color);
+	color: var(--detail-color);
 	opacity: 0.9;
 
 	--inset: 2.5em;
@@ -158,17 +161,10 @@
 	height: 100%;
 	border-radius: 50%;
 
-	--tick-color: var(--text-color);
-
-	--repetitions: calc(360deg / var(--n));
+	--tick-color: var(--detail-color);
 	--offset: calc(0deg - var(--tick-width) / 2);
 
 	padding: var(--tick-height);
-	background: repeating-conic-gradient(
-		from var(--offset) at 50% 50%,
-		var(--tick-color) 0deg var(--tick-width),
-		transparent 0deg var(--repetitions)
-	);
 	mask:
 		conic-gradient(#000 0 0) content-box,
 		conic-gradient(#000 0 0);
@@ -178,19 +174,37 @@
 		--n: 12;
 		--tick-width: 1.5deg;
 		opacity: 0.8;
+		background: repeating-conic-gradient(
+			from var(--offset) at 50% 50%,
+			var(--tick-color) 0deg var(--tick-width),
+			transparent 0deg 30deg
+		);
 	}
 
 	&.minor {
 		--n: 60;
 		--tick-width: 0.5deg;
 		opacity: 0.6;
+		background: repeating-conic-gradient(
+			from var(--offset) at 50% 50%,
+			transparent 0deg 6deg,
+			var(--tick-color) 6deg calc(6deg + var(--tick-width)),
+			transparent 6deg 12deg,
+			var(--tick-color) 12deg calc(12deg + var(--tick-width)),
+			transparent 12deg 18deg,
+			var(--tick-color) 18deg calc(18deg + var(--tick-width)),
+			transparent 18deg 24deg,
+			var(--tick-color) 24deg calc(24deg + var(--tick-width)),
+			transparent 24deg 30deg
+		);
 	}
 }
 
 .ring {
 	position: absolute;
 	inset: var(--tick-height);
-	border: 0.04em solid #888;
+	border: 0.04em solid var(--detail-color);
+	opacity: 0.6;
 	border-radius: 50%;
 	box-sizing: border-box;
 }
@@ -203,7 +217,7 @@
 		pointer-events: auto;
 	}
 
-	--color: var(--text-color);
+	--color: var(--detail-color);
 	--taper: 20%;
 	--shadow-offset: calc(var(--z-height) * 0.01em);
 	--shadow-spread: calc(var(--z-height) * 0.002em);
@@ -305,7 +319,7 @@
 	display: flex;
 	position: absolute;
 	inset: 0;
-	color: var(--text-color);
+	color: var(--detail-color);
 	justify-content: center;
 	top: 65%;
 	font-size: 0.4em;

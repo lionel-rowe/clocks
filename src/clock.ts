@@ -11,7 +11,7 @@ type TimeoutLike = { valueOf(): number }
 document.fonts.add(new FontFace('Poiret One', 'url(/static/PoiretOne-Regular-subset.ttf) format("TrueType")'))
 
 const resolvedDateTimeOptions = new Intl.DateTimeFormat().resolvedOptions()
-const defaults: Record<ObservedAttribute, string> = {
+const defaultAttributeValues: Record<ObservedAttribute, string> = {
 	locale: resolvedDateTimeOptions.locale,
 	time: resolvedDateTimeOptions.timeZone,
 	gloss: new Intl.DateTimeFormat(resolvedDateTimeOptions.locale, {
@@ -104,10 +104,10 @@ abstract class Clock extends HTMLElement {
 		newValue: string | null,
 	) {
 		if (newValue === oldValue) return
-		this[name] = newValue ?? defaults[name]
+		this[name] = newValue ?? defaultAttributeValues[name]
 	}
 
-	#timeState: TimeState = this.#getTimeStateOrThrow(defaults.time)
+	#timeState: TimeState = this.#getTimeStateOrThrow(defaultAttributeValues.time)
 	get time() {
 		return this.#timeState.serialized
 	}
@@ -116,7 +116,7 @@ abstract class Clock extends HTMLElement {
 		this.#timeState = this.#getTimeStateOrThrow(v)
 		this.#updateState(this.#timeState)
 	}
-	#locale = new Intl.Locale(defaults.locale)
+	#locale = new Intl.Locale(defaultAttributeValues.locale)
 	get locale() {
 		return this.#locale.toString()
 	}
@@ -127,7 +127,7 @@ abstract class Clock extends HTMLElement {
 	get paused() {
 		return this.#timeState.kind === 'paused'
 	}
-	#gloss = defaults.gloss
+	#gloss = defaultAttributeValues.gloss
 	get gloss() {
 		return this.#gloss
 	}
