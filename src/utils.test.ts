@@ -1,5 +1,5 @@
 import { assertEquals } from '@std/assert'
-import { advance, modulo } from './utils.ts'
+import { advance, getHourSet } from './utils.ts'
 
 Deno.test(advance.name, async (t) => {
 	await t.step('60s cycle', () => {
@@ -54,5 +54,15 @@ Deno.test(advance.name, async (t) => {
 		assertEquals(advance({ target: 1, current: -1, cycle }), 1)
 		assertEquals(advance({ target: 3, current: -100, cycle }), -93)
 		assertEquals(advance({ target: -100, current: 3, cycle }), 20)
+	})
+})
+
+Deno.test(getHourSet.name, async (t) => {
+	await t.step('14:00', () => {
+		assertEquals(getHourSet(14), [12, 13, 14, 15, 16, 17, 18, 19, 20, 9, 10, 11])
+	})
+
+	await t.step('02:00', () => {
+		assertEquals(getHourSet(2), [0, 1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23])
 	})
 })

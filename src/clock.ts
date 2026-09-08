@@ -1,6 +1,4 @@
 import { assert } from '@std/assert/assert'
-import { delay } from '@std/async/delay'
-import { advance } from './utils.ts'
 import { runEvery } from './runEvery.ts'
 import { TimeoutLike } from '~/src/types.ts'
 
@@ -18,12 +16,12 @@ for (const $el of [...parsed.head.children]) {
 	document.head.appendChild($el)
 }
 
-// https://fonts.google.com/specimen/Poiret+One?preview.text=1+2+3+4+5+6+7+8+9+10+11+12
+// https://fonts.google.com/specimen/Caacupe+One?preview.text=1+2+3+4+5+6+7+8+9+10+11+12
 // https://openfontlicense.org/open-font-license-official-text/
 document.fonts.add(
 	new FontFace(
-		'Poiret One',
-		'url({{ @datauri ~/static/PoiretOne-Regular-subset.ttf }}) format("TrueType")',
+		'Caacupe One',
+		'url({{ @datauri ~/static/CaacupeOne-Regular-subset.woff2 }}) format("woff2")',
 	),
 )
 
@@ -36,16 +34,6 @@ const defaultAttributeValues: Record<ObservedAttribute, string> = {
 		timeZone: resolvedDateTimeOptions.timeZone,
 	}).formatToParts(new Date())
 		.find((x) => x.type === 'timeZoneName')!.value,
-}
-
-const SWITCH_HOUR = 8
-/**
- * 8am and later is day time
- * 8pm and later is night time
- */
-function isDayTime(zdt: Temporal.ZonedDateTime): boolean {
-	const hour = zdt.hour
-	return hour >= SWITCH_HOUR && hour < SWITCH_HOUR + 12
 }
 
 type ObservedAttribute = typeof observedAttributes[number]
@@ -63,7 +51,7 @@ type PausedTimeState = {
 }
 type TimeState = RunningTimeState | PausedTimeState
 
-abstract class Clock extends HTMLElement {
+export abstract class Clock extends HTMLElement {
 	protected static get TEMPLATE_ID(): string {
 		// runtime workaround for lack of `static abstract` properties
 		// https://github.com/microsoft/TypeScript/issues/34516
@@ -194,68 +182,3 @@ abstract class Clock extends HTMLElement {
 		return new Intl.Locale(input)
 	}
 }
-
-class AnalogClock extends Clock {
-	protected static override readonly TEMPLATE_ID = 'tz-clock-analog-template'
-
-	#hours = 0
-	#minutes = 0
-	#seconds = 0
-
-	#$clock: HTMLElement
-	#$gloss: HTMLElement
-	#$time: HTMLTimeElement
-
-	constructor() {
-		super()
-		this.resources.push(Promise.race([
-			document.fonts.load('1em "Poiret One"'),
-			delay(5_000),
-		]))
-
-		const $clock = this.shadowRoot.querySelector('.clock')
-		assert($clock instanceof HTMLElement)
-		const $gloss = this.shadowRoot.querySelector('.gloss')
-		assert($gloss instanceof HTMLElement)
-		const $time = this.shadowRoot.querySelector('time')
-		assert($time instanceof HTMLTimeElement)
-
-		this.#$clock = $clock
-		this.#$gloss = $gloss
-		this.#$time = $time
-	}
-
-	protected override updateUi(zdt: Temporal.ZonedDateTime) {
-		this.#hours = advance({ target: zdt.hour, current: this.#hours, cycle: 24 })
-		this.#minutes = advance({ target: zdt.minute, current: this.#minutes, cycle: 60 })
-		this.#seconds = advance({ target: zdt.second, current: this.#seconds, cycle: 60 })
-
-		this.#$clock.style.setProperty('--hours', this.#hours.toString())
-		this.#$clock.style.setProperty('--minutes', this.#minutes.toString())
-		this.#$clock.style.setProperty('--seconds', this.#seconds.toString())
-
-		this.dataset.timeOfDay = isDayTime(zdt) ? 'day' : 'night'
-		this.#$gloss.textContent = this.gloss
-		this.title = this.gloss
-
-		// Update the machine-readable time for screen readers and other assistive tech
-		this.#$time.dateTime = zdt.toString()
-		this.#$time.textContent = zdt.toLocaleString(this.locale)
-	}
-}
-
-class DigitalClock extends Clock {
-	protected static override readonly TEMPLATE_ID = 'tz-clock-digital-template'
-
-	protected override updateUi(zdt: Temporal.ZonedDateTime) {
-		// Update the machine-readable time for screen readers and other assistive tech
-		const $time = this.shadowRoot.querySelector('time')
-		assert($time instanceof HTMLTimeElement)
-		$time.dateTime = zdt.toString()
-		$time.textContent = zdt.toLocaleString(this.locale)
-		this.title = this.gloss
-	}
-}
-
-customElements.define('tz-clock-analog', AnalogClock)
-customElements.define('tz-clock-digital', DigitalClock)

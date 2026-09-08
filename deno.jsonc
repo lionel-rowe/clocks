@@ -2,6 +2,7 @@
 	"lock": false,
 	"exports": {},
 	"tasks": {
+		"test": "deno test",
 		"build": "deno run -A --watch=src scripts/build.ts"
 	},
 	"imports": {

@@ -1,1 +1,2 @@
-import './clock.ts'
+import './analogClock.ts'
+import './digitalClock.ts'

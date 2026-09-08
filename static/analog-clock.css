@@ -117,11 +117,10 @@
 
 .numbers {
 	position: absolute;
-	counter-reset: clock;
 	inset: 0;
 	width: 100%;
 	height: 100%;
-	font-family: 'Poiret One', sans-serif;
+	font-family: 'Caacupe One', sans-serif;
 	pointer-events: none;
 	> * {
 		pointer-events: auto;
@@ -129,7 +128,6 @@
 }
 
 .number {
-	counter-increment: clock;
 	position: absolute;
 	text-align: center;
 	line-height: 1em;
@@ -151,8 +149,8 @@
 	font-weight: 900;
 
 	&::after {
-		content: counter(clock);
 		font-size: 1.3em;
+		content: attr(data-value);
 	}
 }
 
@@ -173,7 +171,6 @@
 	mask-composite: exclude;
 
 	&.major {
-		--n: 12;
 		--tick-width: 1.5deg;
 		opacity: 0.8;
 		background: repeating-conic-gradient(
@@ -184,7 +181,6 @@
 	}
 
 	&.minor {
-		--n: 60;
 		--tick-width: 0.5deg;
 		opacity: 0.6;
 		background: repeating-conic-gradient(
