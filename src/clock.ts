@@ -1,4 +1,3 @@
-import 'temporal-polyfill/global'
 import { assert } from '@std/assert/assert'
 import { delay } from '@std/async/delay'
 import { advance } from './utils.ts'
