@@ -1,3 +1,5 @@
+import { TimeoutLike } from '~/src/types.ts'
+
 type Increment = keyof typeof Increment
 export const Increment = {
 	millisecond: 1,
@@ -9,7 +11,7 @@ export const Increment = {
 
 /** Creates a more accurate timeout that accounts for drift */
 export function runEvery(increment: Increment, callback: (next: Temporal.Instant) => void): { valueOf(): number } {
-	let timeout = -1
+	let timeout: TimeoutLike | NodeJS.Timeout = -1
 	const n = Increment[increment]
 
 	const timeToNextFullSecond = () => {
@@ -30,5 +32,5 @@ export function runEvery(increment: Increment, callback: (next: Temporal.Instant
 
 	timeout = setTimeout(nextSecond, timeToNextFullSecond().remaining)
 
-	return { valueOf: () => timeout }
+	return { valueOf: () => Number(timeout) }
 }
