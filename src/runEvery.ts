@@ -30,6 +30,9 @@ export function runEvery(increment: Increment, callback: (next: Temporal.Instant
 		timeout = setTimeout(nextSecond, remaining)
 	}
 
+	// Start the recurring timeout immediately
+	nextSecond()
+
 	timeout = setTimeout(nextSecond, timeToNextFullSecond().remaining)
 
 	return { valueOf: () => Number(timeout) }

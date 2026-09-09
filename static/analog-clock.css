@@ -30,7 +30,7 @@
 		--rim-color: #888;
 	}
 
-	&:host(.no-second-hand) {
+	&:host([second-hand='false']) {
 		.hand.second {
 			display: none;
 		}
@@ -128,14 +128,16 @@
 }
 
 .number {
+	font-size: 1.3em;
+
 	position: absolute;
 	text-align: center;
-	line-height: 1em;
+	line-height: 1;
 	font-weight: bold;
 	color: var(--detail-color);
 	opacity: 0.9;
 
-	--inset: 2.5em;
+	--inset: 4em;
 	--letter-spacing: 0em;
 
 	transform: translate(-50%, -50%) rotate(calc(var(--n) * 30deg + 180deg))
@@ -147,11 +149,6 @@
 	align-items: center;
 	letter-spacing: var(--letter-spacing, 0em);
 	font-weight: 900;
-
-	&::after {
-		font-size: 1.3em;
-		content: attr(data-value);
-	}
 }
 
 .ticks {

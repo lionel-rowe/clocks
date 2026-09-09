@@ -37,7 +37,7 @@ const defaultAttributeValues: Record<ObservedAttribute, string> = {
 }
 
 type ObservedAttribute = typeof observedAttributes[number]
-const observedAttributes = ['time', 'locale', 'gloss'] as const
+export const observedAttributes = ['time', 'locale', 'gloss'] as const
 
 type RunningTimeState = {
 	kind: 'running'
@@ -102,7 +102,8 @@ export abstract class Clock extends HTMLElement {
 		this.#pause()
 	}
 
-	static readonly observedAttributes = observedAttributes
+	static readonly observedAttributes = observedAttributes as readonly string[]
+
 	attributeChangedCallback(
 		name: ObservedAttribute,
 		oldValue: string | null,
