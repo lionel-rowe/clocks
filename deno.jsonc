@@ -3,7 +3,7 @@
 	"exports": {},
 	"tasks": {
 		"test": "deno test",
-		"build": "deno run -A --watch=src scripts/build.ts"
+		"build": "deno run -A scripts/build.ts"
 	},
 	"imports": {
 		"@std/media-types": "jsr:@std/media-types@^1.1.0",
