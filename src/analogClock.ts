@@ -57,6 +57,40 @@ export class AnalogClock extends Clock {
 		this.#updateGlossUi()
 	}
 
+	#abortController = new AbortController()
+
+	#uiUpdated = Promise.withResolvers<void>()
+
+	override connectedCallback() {
+		super.connectedCallback()
+
+		globalThis.addEventListener('visibilitychange', async () => {
+			switch (document.visibilityState) {
+				case 'hidden': {
+					this.classList.add('inactive')
+					break
+				}
+				case 'visible': {
+					await this.#uiUpdated.promise
+					this.classList.remove('inactive')
+
+					break
+				}
+				default: {
+					// type check to ensure all cases are handled
+					const _: never = document.visibilityState
+				}
+			}
+		}, { signal: this.#abortController.signal })
+	}
+
+	override disconnectedCallback() {
+		super.disconnectedCallback()
+
+		this.#abortController.abort()
+		this.#abortController = new AbortController()
+	}
+
 	#updateGlossUi() {
 		this.#$gloss.textContent = this.gloss
 		this.title = this.gloss
@@ -108,7 +142,7 @@ export class AnalogClock extends Clock {
 			this.dataset.timeOfDay = isDayTime(zdt) ? 'day' : 'night'
 
 			const hourSet = this.hourCycle === 12
-				? [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+				? Array.from({ length: 12 }, (_, i) => i || 12)
 				: getHourSet(this.#time.hours)
 
 			for (const [idx, $number] of this.#$numbers.entries()) {
@@ -131,6 +165,9 @@ export class AnalogClock extends Clock {
 		}
 
 		this.#prevTime = { ...this.#time }
+
+		this.#uiUpdated.resolve()
+		this.#uiUpdated = Promise.withResolvers<void>()
 	}
 }
 

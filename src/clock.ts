@@ -92,7 +92,7 @@ export abstract class Clock extends HTMLElement {
 	}
 
 	connectedCallback() {
-		Promise.all([this.#ready, this.#updateState(this.#timeState)]).then(() => {
+		Promise.all([this.#ready, this.#updateState(this.timeState)]).then(() => {
 			this.style.display = this.#initialDisplay
 			if (this.style.cssText === '') this.removeAttribute('style')
 		})
@@ -113,14 +113,14 @@ export abstract class Clock extends HTMLElement {
 		this[name] = newValue ?? defaultAttributeValues[name]
 	}
 
-	#timeState: TimeState = this.#getTimeStateOrThrow(defaultAttributeValues.time)
+	protected timeState: TimeState = this.#getTimeStateOrThrow(defaultAttributeValues.time)
 	get time() {
-		return this.#timeState.serialized
+		return this.timeState.serialized
 	}
 	/** @throws {RangeError} if set to an invalid time zone or zoned datetime */
 	set time(v) {
-		this.#timeState = this.#getTimeStateOrThrow(v)
-		this.#updateState(this.#timeState)
+		this.timeState = this.#getTimeStateOrThrow(v)
+		this.#updateState(this.timeState)
 	}
 	#locale = new Intl.Locale(defaultAttributeValues.locale)
 	get locale() {
@@ -131,7 +131,7 @@ export abstract class Clock extends HTMLElement {
 		this.#locale = this.#getLocaleOrThrow(v)
 	}
 	get paused() {
-		return this.#timeState.kind === 'paused'
+		return this.timeState.kind === 'paused'
 	}
 	#gloss = defaultAttributeValues.gloss
 	get gloss() {

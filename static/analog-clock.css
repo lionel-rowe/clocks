@@ -42,6 +42,8 @@
 	justify-content: center;
 	align-items: center;
 
+	user-select: none;
+
 	--hours: 0;
 	--minutes: 0;
 	--seconds: 0;
@@ -226,6 +228,10 @@
 
 	--transition: transform 1s;
 
+	:host(.inactive) & {
+		--transition: none;
+	}
+
 	&.hour {
 		--width: 0.3em;
 		--length: 2.4em;
@@ -251,6 +257,10 @@
 		--tail-end-length: 0.6em;
 		--tail-end-width: 0.2em;
 		--transition: transform 0.2s ease-out;
+
+		:host(.inactive) & {
+			--transition: none;
+		}
 	}
 
 	:is(.head, .tail-end) {

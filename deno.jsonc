@@ -6,6 +6,10 @@
 		"build": "deno run -A scripts/build.ts"
 	},
 	"imports": {
+		"@node-minify/core": "npm:@node-minify/core@^11.0.0",
+		"@node-minify/html-minifier": "npm:@node-minify/html-minifier@^11.0.0",
+		"@node-minify/lightningcss": "npm:@node-minify/lightningcss@^11.0.0",
+		"@node-minify/minify-html": "npm:@node-minify/minify-html@^11.0.0",
 		"@std/media-types": "jsr:@std/media-types@^1.1.0",
 		"@std/assert": "jsr:@std/assert@^1.0.15",
 		"@std/async": "jsr:@std/async@^1.0.15",
