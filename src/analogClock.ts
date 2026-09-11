@@ -1,7 +1,10 @@
 import { assert } from '@std/assert/assert'
 import { delay } from '@std/async/delay'
 import { Clock, observedAttributes as superObservedAttributes } from '~/src/clock.ts'
-import { advance, getHourSet, isDayTime } from '~/src/utils.ts'
+import { advance, getHourSet } from '~/src/utils.ts'
+import { getGradient } from '~/src/gradient.ts'
+import { StarCreator } from '~/src/stars.ts'
+import { prng } from '~/src/prng.ts'
 
 function assertArrayOf<T>(value: unknown, predicate: (item: unknown) => item is T): asserts value is T[] {
 	assert(Array.isArray(value))
@@ -16,6 +19,12 @@ const observedAttributes = [
 	'hour-cycle',
 ] as const
 
+const sc = new StarCreator()
+sc.random = prng(74896)
+const starsSvg = sc.createStarsSvg(200, 200, 200)
+
+const starsSvgUrl = URL.createObjectURL(new Blob([starsSvg], { type: 'image/svg+xml' }))
+
 export class AnalogClock extends Clock {
 	protected static override readonly TEMPLATE_ID = 'tz-clock-analog-template'
 
@@ -23,6 +32,7 @@ export class AnalogClock extends Clock {
 	#prevTime = { hours: NaN, minutes: NaN, seconds: NaN }
 
 	#$clock: HTMLElement
+	#$face: HTMLElement
 	#$gloss: HTMLElement
 	#$time: HTMLTimeElement
 	#$numbers: HTMLElement[]
@@ -40,6 +50,8 @@ export class AnalogClock extends Clock {
 
 		const $clock = this.shadowRoot.querySelector('.clock')
 		assert($clock instanceof HTMLElement)
+		const $face = this.shadowRoot.querySelector('.face')
+		assert($face instanceof HTMLElement)
 		const $gloss = this.shadowRoot.querySelector('.gloss')
 		assert($gloss instanceof HTMLElement)
 		const $time = this.shadowRoot.querySelector('time')
@@ -49,6 +61,7 @@ export class AnalogClock extends Clock {
 		assertArrayOf($$numbers, (item) => item instanceof HTMLElement)
 
 		this.#$clock = $clock
+		this.#$face = $face
 		this.#$gloss = $gloss
 		this.#$time = $time
 		this.#$numbers = $$numbers
@@ -73,7 +86,6 @@ export class AnalogClock extends Clock {
 				case 'visible': {
 					await this.#uiUpdated.promise
 					this.classList.remove('inactive')
-
 					break
 				}
 				default: {
@@ -137,9 +149,25 @@ export class AnalogClock extends Clock {
 		this.#$time.dateTime = zdt.toString()
 		this.#$time.textContent = zdt.toLocaleString(this.locale)
 
+		if (this.#time.hours !== this.#prevTime.hours || this.#time.minutes !== this.#prevTime.minutes) {
+			const gradient = getGradient(
+				zdt.toPlainTime().with({ second: 0, millisecond: 0, microsecond: 0, nanosecond: 0 }),
+			)
+
+			const background = `
+				linear-gradient(
+					to bottom,
+					${gradient.zenith},
+					${gradient.horizon}
+				),
+				url("${starsSvgUrl}")
+			`
+
+			this.#$face.style.setProperty('--background', background)
+		}
+
 		if (this.#time.hours !== this.#prevTime.hours) {
 			this.#$clock.style.setProperty('--hours', String(this.#time.hours))
-			this.dataset.timeOfDay = isDayTime(zdt) ? 'day' : 'night'
 
 			const hourSet = this.hourCycle === 12
 				? Array.from({ length: 12 }, (_, i) => i || 12)

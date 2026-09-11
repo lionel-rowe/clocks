@@ -16,19 +16,12 @@
 	--frame-outer-width: 0.35em;
 	--frame-inner-width: 0.2em;
 
-	--face-color: #fffaf0;
-	--detail-color: #262626;
-	--second-hand-color: #d43c2b;
-	--glass-sheen: 0.3;
+	--detail-color: #fff;
+	--second-hand-color: #cde;
+	--glass-sheen: 0.2;
 	--rim-color: #888;
 
-	&:host([data-time-of-day='night']) {
-		--face-color: #0f0f0f;
-		--detail-color: #ffffff;
-		--second-hand-color: #03a9f4;
-		--glass-sheen: 0.15;
-		--rim-color: #888;
-	}
+	--text-stroke-color: #0012;
 
 	&:host([second-hand='false']) {
 		.hand.second {
@@ -101,10 +94,13 @@
 
 .face {
 	position: absolute;
-	/* inset: var(--frame-width); */
 	inset: var(--frame-inner-width);
 
-	background: var(--face-color);
+	background: var(--background, black);
+	background-size: cover;
+
+	transition: background 1s ease;
+
 	border-radius: 50%;
 }
 
@@ -127,6 +123,9 @@
 	> * {
 		pointer-events: auto;
 	}
+
+	-webkit-text-stroke: 2px var(--text-stroke-color);
+	paint-order: stroke fill;
 }
 
 .number {
@@ -329,6 +328,9 @@
 	top: 65%;
 	font-size: 0.4em;
 	opacity: 0.9;
+
+	-webkit-text-stroke-width: 2px var(--text-stroke-color);
+	paint-order: stroke fill;
 }
 
 .sr-only {

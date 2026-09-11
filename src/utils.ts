@@ -13,16 +13,6 @@ export function modulo(n: number, m: number) {
 	return ((n % m) + m) % m
 }
 
-const SWITCH_HOUR = 8
-/**
- * 8am and later is day time
- * 8pm and later is night time
- */
-export function isDayTime(zdt: Temporal.ZonedDateTime): boolean {
-	const hour = zdt.hour
-	return hour >= SWITCH_HOUR && hour < SWITCH_HOUR + 12
-}
-
 /**
  * Hour values based on the next hour (6 hours prior, 6 hours after)
  * E.g.
@@ -39,4 +29,9 @@ export function getHourSet(currentHour: number): number[] {
 		hours[modulo(x, 12)] = modulo(x, 24)
 	}
 	return hours
+}
+
+export function clamp(value: number, range: [min: number, max: number]): number {
+	const [min, max] = range
+	return Math.min(Math.max(value, min), max)
 }
