@@ -21,7 +21,7 @@ const observedAttributes = [
 
 const sc = new StarCreator()
 sc.random = prng(74896)
-const starsSvg = sc.createStarsSvg(200, 200, 200)
+const starsSvg = sc.createStarsSvg(200, [200, 200])
 
 const starsSvgUrl = URL.createObjectURL(new Blob([starsSvg], { type: 'image/svg+xml' }))
 

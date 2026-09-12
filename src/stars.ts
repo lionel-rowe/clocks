@@ -1,7 +1,8 @@
 export class StarCreator {
 	random = Math.random
 
-	createStarsSvg(width: number, height: number, count: number) {
+	createStarsSvg(count: number, dimensions: [width: number, height: number]) {
+		const [width, height] = dimensions
 		const stars = Array.from({ length: count }, () => this.#createStar(width, height))
 		return this.#svgBoilerplate(
 			width,
