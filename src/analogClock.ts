@@ -77,15 +77,18 @@ export class AnalogClock extends Clock {
 	override connectedCallback() {
 		super.connectedCallback()
 
+		const setActive = (active: boolean) => this.classList.toggle('inactive', !active)
+
 		globalThis.addEventListener('visibilitychange', async () => {
 			switch (document.visibilityState) {
 				case 'hidden': {
-					this.classList.add('inactive')
+					setActive(false)
 					break
 				}
 				case 'visible': {
+					setActive(false)
 					await this.#uiUpdated.promise
-					this.classList.remove('inactive')
+					requestAnimationFrame(() => setActive(true))
 					break
 				}
 				default: {
@@ -155,11 +158,7 @@ export class AnalogClock extends Clock {
 			)
 
 			const background = `
-				linear-gradient(
-					to bottom,
-					${gradient.zenith},
-					${gradient.horizon}
-				),
+				${gradient},
 				url("${starsSvgUrl}")
 			`
 
@@ -195,7 +194,7 @@ export class AnalogClock extends Clock {
 		this.#prevTime = { ...this.#time }
 
 		this.#uiUpdated.resolve()
-		this.#uiUpdated = Promise.withResolvers<void>()
+		this.#uiUpdated = Promise.withResolvers()
 	}
 }
 
