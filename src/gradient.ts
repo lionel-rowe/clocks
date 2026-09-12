@@ -1,10 +1,5 @@
-const MS_IN_S = 1000
-const MS_IN_MIN = 60 * MS_IN_S
-const MS_IN_HOUR = 60 * MS_IN_MIN
+import { MS_IN_DAY, MS_IN_HOUR, MS_IN_MIN, MS_IN_S } from '~/src/consts.ts'
 
-const MS_IN_DAY = 24 * MS_IN_HOUR
-
-type Hsla = [h: number, s: number, l: number, a: number]
 type HslaStr = `hsla(${number}, ${number}%, ${number}%, ${number})`
 
 type Gradient = {

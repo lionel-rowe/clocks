@@ -152,8 +152,8 @@ export abstract class Clock extends HTMLElement {
 					return
 				}
 				case 'running': {
-					this.#timeout = runEvery('second', (next) => {
-						const zdt = next.toZonedDateTimeISO(state.timeZone)
+					this.#timeout = runEvery('second', (current) => {
+						const zdt = current.toZonedDateTimeISO(state.timeZone)
 						this.updateUi(zdt)
 						res()
 					})

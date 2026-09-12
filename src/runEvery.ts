@@ -1,12 +1,13 @@
 import { TimeoutLike } from '~/src/types.ts'
+import { MS_IN_DAY, MS_IN_HOUR, MS_IN_MIN, MS_IN_S } from '~/src/consts.ts'
 
 type Increment = keyof typeof Increment
 export const Increment = {
 	millisecond: 1,
-	second: 1000,
-	minute: 60_000,
-	hour: 3_600_000,
-	day: 86_400_000,
+	second: MS_IN_S,
+	minute: MS_IN_MIN,
+	hour: MS_IN_HOUR,
+	day: MS_IN_DAY,
 } as const
 
 /** Creates a more accurate timeout that accounts for drift */
@@ -14,26 +15,26 @@ export function runEvery(increment: Increment, callback: (next: Temporal.Instant
 	let timeout: TimeoutLike | NodeJS.Timeout = -1
 	const n = Increment[increment]
 
-	const timeToNextFullSecond = () => {
+	const getTimeInfo = () => {
 		const now = Temporal.Now.instant()
-		const remaining = n - (now.epochMilliseconds % n)
+		const remainder = now.epochMilliseconds % n
+		const timeToNext = n - remainder
 		return {
-			now,
-			remaining,
-			next: Temporal.Instant.fromEpochMilliseconds(now.epochMilliseconds + remaining),
+			current: Temporal.Instant.fromEpochMilliseconds(now.epochMilliseconds - remainder),
+			timeToNext,
 		}
 	}
 
 	const nextSecond = () => {
-		const { next, remaining } = timeToNextFullSecond()
-		callback(next)
-		timeout = setTimeout(nextSecond, remaining)
+		const { current, timeToNext } = getTimeInfo()
+		callback(current)
+		timeout = setTimeout(nextSecond, timeToNext)
 	}
 
 	// Start the recurring timeout immediately
 	nextSecond()
 
-	timeout = setTimeout(nextSecond, timeToNextFullSecond().remaining)
+	timeout = setTimeout(nextSecond, getTimeInfo().timeToNext)
 
 	return { valueOf: () => Number(timeout) }
 }
