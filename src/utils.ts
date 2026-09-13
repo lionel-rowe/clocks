@@ -35,3 +35,40 @@ export function clamp(value: number, range: [min: number, max: number]): number 
 	const [min, max] = range
 	return Math.min(Math.max(value, min), max)
 }
+
+/**
+ * Invariants:
+ * - `xs` must be a non-empty array of positive numbers in ascending order
+ * - `total` must be a positive number
+ * - `target` must be a finite number
+ */
+export function interpolate(
+	xs: number[],
+	params: {
+		target: number
+		total: number
+	},
+): {
+	startIdx: number
+	endIdx: number
+	progress: number
+} {
+	let { target } = params
+	target = modulo(target, params.total)
+
+	let startIdx = -1
+	let endIdx = 0
+
+	for (let i = 0; i < xs.length; ++i) {
+		if (xs[i]! > target) {
+			endIdx = i
+			break
+		}
+	}
+
+	startIdx = modulo(endIdx - 1, xs.length)
+
+	const progress = (target - xs[startIdx]) / modulo(xs[endIdx] - xs[startIdx], params.total)
+
+	return { startIdx, endIdx, progress }
+}

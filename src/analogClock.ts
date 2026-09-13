@@ -67,16 +67,11 @@ export class AnalogClock extends Clock {
 		this.#$numbers = $$numbers
 
 		this.hourCycle = this.getAttribute('hour-cycle') === '24' ? 24 : 12
-		this.#updateGlossUi()
 	}
 
-	#abortController = new AbortController()
-
-	override disconnectedCallback() {
-		super.disconnectedCallback()
-
-		this.#abortController.abort()
-		this.#abortController = new AbortController()
+	override connectedCallback() {
+		super.connectedCallback()
+		this.#updateGlossUi()
 	}
 
 	#updateGlossUi() {

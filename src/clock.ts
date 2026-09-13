@@ -161,13 +161,30 @@ export abstract class Clock extends HTMLElement {
 	get paused() {
 		return this.timeState.kind === 'paused'
 	}
-	#gloss = defaultAttributeValues.gloss
+
+	get #timeZone() {
+		const { timeState } = this
+
+		switch (timeState.kind) {
+			case 'paused': {
+				return timeState.time.timeZoneId
+			}
+			case 'running': {
+				return timeState.timeZone
+			}
+			default: {
+				const _: never = timeState
+				throw new Error('unreachable')
+			}
+		}
+	}
+
+	#gloss: string | null = null
 	get gloss() {
-		return this.#gloss
+		return this.#gloss ?? this.#timeZone
 	}
 	set gloss(v) {
 		this.#gloss = v
-		this.title = v
 	}
 
 	#uiUpdated = Promise.withResolvers<void>()

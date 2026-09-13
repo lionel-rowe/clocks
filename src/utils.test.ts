@@ -1,5 +1,5 @@
 import { assertEquals } from '@std/assert'
-import { advance, getHourSet } from './utils.ts'
+import { advance, getHourSet, interpolate } from './utils.ts'
 
 Deno.test(advance.name, async (t) => {
 	await t.step('60s cycle', () => {
@@ -65,4 +65,24 @@ Deno.test(getHourSet.name, async (t) => {
 	await t.step('02:00', () => {
 		assertEquals(getHourSet(2), [0, 1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23])
 	})
+})
+Deno.test(interpolate.name, async (t) => {
+	const xs = [0, 1, 5, 10, 11]
+	const tests = [
+		{ target: 0, result: { startIdx: 0, endIdx: 1, progress: 0 } },
+		{ target: 0.5, result: { startIdx: 0, endIdx: 1, progress: 0.5 } },
+		{ target: 1, result: { startIdx: 1, endIdx: 2, progress: 0 } },
+		{ target: 2, result: { startIdx: 1, endIdx: 2, progress: 0.25 } },
+		{ target: 5, result: { startIdx: 2, endIdx: 3, progress: 0 } },
+		{ target: 10, result: { startIdx: 3, endIdx: 4, progress: 0 } },
+		{ target: 11, result: { startIdx: 4, endIdx: 0, progress: 0 } },
+		{ target: 12, result: { startIdx: 4, endIdx: 0, progress: 0.5 } },
+		{ target: 13, result: { startIdx: 0, endIdx: 1, progress: 0 } },
+	]
+
+	for (const { target, result } of tests) {
+		await t.step(`target: ${target}`, () => {
+			assertEquals(interpolate(xs, { target, total: 13 }), result)
+		})
+	}
 })
