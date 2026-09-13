@@ -72,33 +72,6 @@ export class AnalogClock extends Clock {
 
 	#abortController = new AbortController()
 
-	#uiUpdated = Promise.withResolvers<void>()
-
-	override connectedCallback() {
-		super.connectedCallback()
-
-		const setActive = (active: boolean) => this.classList.toggle('inactive', !active)
-
-		globalThis.addEventListener('visibilitychange', async () => {
-			switch (document.visibilityState) {
-				case 'hidden': {
-					setActive(false)
-					break
-				}
-				case 'visible': {
-					setActive(false)
-					await this.#uiUpdated.promise
-					requestAnimationFrame(() => setActive(true))
-					break
-				}
-				default: {
-					// type check to ensure all cases are handled
-					const _: never = document.visibilityState
-				}
-			}
-		}, { signal: this.#abortController.signal })
-	}
-
 	override disconnectedCallback() {
 		super.disconnectedCallback()
 
@@ -192,9 +165,6 @@ export class AnalogClock extends Clock {
 		}
 
 		this.#prevTime = { ...this.#time }
-
-		this.#uiUpdated.resolve()
-		this.#uiUpdated = Promise.withResolvers()
 	}
 }
 

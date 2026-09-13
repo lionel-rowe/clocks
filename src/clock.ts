@@ -59,18 +59,17 @@ export abstract class Clock extends HTMLElement {
 	}
 
 	#_timeout: TimeoutLike = -1
-	#initialDisplay: string
-	get #timeout() {
-		return this.#_timeout
-	}
-	set #timeout(v) {
+
+	#replaceTimeout(value: TimeoutLike) {
 		clearTimeout(this.#_timeout.valueOf())
-		this.#_timeout = v
+		this.#_timeout = value
 	}
+
+	#initialDisplay: string
 
 	declare shadowRoot: ShadowRoot
 
-	protected abstract updateUi(zdt: Temporal.ZonedDateTime): void
+	protected abstract updateUi(zdt: Temporal.ZonedDateTime): void | Promise<void>
 
 	protected resources: Promise<unknown>[] = []
 	get #ready() {
@@ -91,15 +90,44 @@ export abstract class Clock extends HTMLElement {
 		this.shadowRoot.append(templateContent.cloneNode(true))
 	}
 
+	#abortController = new AbortController()
+
+	#setIdle(idle: boolean) {
+		this.classList.toggle('idle', idle)
+	}
+
 	connectedCallback() {
-		Promise.all([this.#ready, this.#updateState(this.timeState)]).then(() => {
+		this.#ready.then(() => {
 			this.style.display = this.#initialDisplay
 			if (this.style.cssText === '') this.removeAttribute('style')
 		})
+
+		globalThis.addEventListener('visibilitychange', async () => {
+			switch (document.visibilityState) {
+				case 'hidden': {
+					this.#setIdle(true)
+					break
+				}
+				case 'visible': {
+					this.#setIdle(true)
+					await this.#uiUpdated.promise
+					this.#setIdle(false)
+
+					break
+				}
+				default: {
+					// type check to ensure all cases are handled
+					const _: never = document.visibilityState
+				}
+			}
+		}, { signal: this.#abortController.signal })
 	}
 
 	disconnectedCallback() {
 		this.#pause()
+
+		this.#abortController.abort()
+		this.#abortController = new AbortController()
 	}
 
 	static readonly observedAttributes = observedAttributes as readonly string[]
@@ -142,29 +170,34 @@ export abstract class Clock extends HTMLElement {
 		this.title = v
 	}
 
-	#updateState(state: TimeState): Promise<void> {
-		return new Promise((res) => {
-			switch (state.kind) {
-				case 'paused': {
-					this.#pause()
-					this.updateUi(state.time)
-					res()
-					return
-				}
-				case 'running': {
-					this.#timeout = runEvery('second', (current) => {
-						const zdt = current.toZonedDateTimeISO(state.timeZone)
-						this.updateUi(zdt)
-						res()
-					})
-					return
-				}
+	#uiUpdated = Promise.withResolvers<void>()
+	async #updateUi(zdt: Temporal.ZonedDateTime) {
+		await this.updateUi(zdt)
+		this.#uiUpdated.resolve()
+		this.#uiUpdated = Promise.withResolvers<void>()
+	}
+
+	async #updateState(state: TimeState): Promise<void> {
+		switch (state.kind) {
+			case 'paused': {
+				this.#pause()
+				await this.#updateUi(state.time)
+				return
 			}
-		})
+			case 'running': {
+				return new Promise((res) => {
+					this.#replaceTimeout(runEvery('second', async (current) => {
+						const zdt = current.toZonedDateTimeISO(state.timeZone)
+						await this.#updateUi(zdt)
+						res()
+					}))
+				})
+			}
+		}
 	}
 
 	#pause() {
-		this.#timeout = -1
+		this.#replaceTimeout(-1)
 	}
 
 	/** @throws {RangeError} if input is not a valid time zone or zoned datetime */

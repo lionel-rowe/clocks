@@ -18,15 +18,15 @@ export function runEvery(increment: Increment, callback: (next: Temporal.Instant
 	const getTimeInfo = () => {
 		const now = Temporal.Now.instant()
 		const remainder = now.epochMilliseconds % n
-		const timeToNext = n - remainder
-		return {
-			current: Temporal.Instant.fromEpochMilliseconds(now.epochMilliseconds - remainder),
-			timeToNext,
-		}
+		const timeToNext = n - remainder + 1
+		const current = Temporal.Instant.fromEpochMilliseconds(now.epochMilliseconds - remainder)
+
+		return { current, timeToNext }
 	}
 
 	const nextSecond = () => {
 		const { current, timeToNext } = getTimeInfo()
+		clearTimeout(Number(timeout))
 		callback(current)
 		timeout = setTimeout(nextSecond, timeToNext)
 	}
