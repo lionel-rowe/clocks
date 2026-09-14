@@ -106,11 +106,13 @@ export abstract class Clock extends HTMLElement {
 			switch (document.visibilityState) {
 				case 'hidden': {
 					this.#setIdle(true)
+					this.#replaceTimeout(-1)
 					break
 				}
 				case 'visible': {
 					this.#setIdle(true)
-					await this.#uiUpdated.promise
+					// await this.#uiUpdated.promise
+					await this.#updateState(this.timeState)
 					this.#setIdle(false)
 
 					break
