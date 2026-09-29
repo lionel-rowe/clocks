@@ -72,3 +72,25 @@ export function interpolate(
 
 	return { startIdx, endIdx, progress }
 }
+
+export function loadTemplate(html: string) {
+	const parsed = new DOMParser().parseFromString(html, 'text/html')
+	const [$el, ...rest] = [...parsed.head.children, ...parsed.body.children]
+	assert($el instanceof HTMLTemplateElement && !rest.length)
+
+	const $cur = document.getElementById($el.id)
+
+	if ($cur == null) {
+		document.head.appendChild($el)
+		return $el
+	}
+
+	return null
+}
+
+export function assertArrayOf<T>(value: unknown, predicate: (item: unknown) => item is T): asserts value is T[] {
+	assert(Array.isArray(value))
+	for (const item of value) {
+		assert(predicate(item))
+	}
+}

@@ -1,17 +1,10 @@
 import { assert } from '@std/assert/assert'
 import { delay } from '@std/async/delay'
 import { Clock, observedAttributes as superObservedAttributes } from '~/src/clock.ts'
-import { advance, getHourSet } from '~/src/utils.ts'
+import { advance, assertArrayOf, getHourSet, loadTemplate } from '~/src/utils.ts'
 import { getGradient } from '~/src/gradient.ts'
 import { StarCreator } from '~/src/stars.ts'
 import { prng } from '~/src/prng.ts'
-
-function assertArrayOf<T>(value: unknown, predicate: (item: unknown) => item is T): asserts value is T[] {
-	assert(Array.isArray(value))
-	for (const item of value) {
-		assert(predicate(item))
-	}
-}
 
 type ObservedAttribute = typeof observedAttributes[number]
 const observedAttributes = [
@@ -19,14 +12,36 @@ const observedAttributes = [
 	'hour-cycle',
 ] as const
 
-const sc = new StarCreator()
-sc.random = prng(74896)
-const starsSvg = sc.createStarsSvg(200, [200, 200])
-
-const starsSvgUrl = URL.createObjectURL(new Blob([starsSvg], { type: 'image/svg+xml' }))
-
 export class AnalogClock extends Clock {
 	protected static override readonly TEMPLATE_ID = 'tz-clock-analog-template'
+	static #starsSvgUrl: string
+
+	static {
+		const $template = loadTemplate('{{ @text ~/static/analog-clock.html }}')
+
+		if ($template != null) {
+			const css = '{{ @text ~/static/analog-clock.css }}'
+			const $link = $template.content.appendChild(document.createElement('link'))
+			$link.rel = 'stylesheet'
+			$link.href = URL.createObjectURL(new Blob([css], { type: 'text/css' }))
+
+			// https://fonts.google.com/specimen/Caacupe+One?preview.text=1+2+3+4+5+6+7+8+9+10+11+12
+			// https://openfontlicense.org/open-font-license-official-text/
+			document.fonts.add(
+				new FontFace(
+					'Caacupe One',
+					'url({{ @datauri ~/static/CaacupeOne-Regular-subset.woff2 }})',
+				),
+			)
+
+			const sc = new StarCreator()
+			sc.random = prng(74896)
+			const starsSvg = sc.createStarsSvg(200, [200, 200])
+			AnalogClock.#starsSvgUrl = URL.createObjectURL(new Blob([starsSvg], { type: 'image/svg+xml' }))
+
+			customElements.define('tz-clock-analog', AnalogClock)
+		}
+	}
 
 	#time = { hours: 0, minutes: 0, seconds: 0 }
 	#prevTime = { hours: NaN, minutes: NaN, seconds: NaN }
@@ -127,7 +142,7 @@ export class AnalogClock extends Clock {
 
 			const background = `
 				${gradient},
-				url("${starsSvgUrl}")
+				url("${AnalogClock.#starsSvgUrl}")
 			`
 
 			this.#$face.style.setProperty('--background', background)
@@ -162,5 +177,3 @@ export class AnalogClock extends Clock {
 		this.#prevTime = { ...this.#time }
 	}
 }
-
-customElements.define('tz-clock-analog', AnalogClock)

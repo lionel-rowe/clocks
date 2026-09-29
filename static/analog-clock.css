@@ -320,7 +320,7 @@
 	color: var(--detail-color);
 	justify-content: center;
 	top: 65%;
-	font-size: 0.4em;
+	font-size: 0.5em;
 	opacity: 0.9;
 
 	-webkit-text-stroke-width: 2px var(--text-stroke-color);

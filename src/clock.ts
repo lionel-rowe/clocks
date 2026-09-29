@@ -2,29 +2,6 @@ import { assert } from '@std/assert/assert'
 import { runEvery } from './runEvery.ts'
 import { TimeoutLike } from '~/src/types.ts'
 
-const parsed = new DOMParser().parseFromString(
-	'{{ @html ~/static/templates.html }}',
-	'text/html',
-)
-
-assert(parsed.head.children.length === 2)
-
-// must be spread into an array to avoid live collection issues
-for (const $el of [...parsed.head.children]) {
-	assert($el instanceof HTMLTemplateElement)
-	if (document.getElementById($el.id) != null) continue
-	document.head.appendChild($el)
-}
-
-// https://fonts.google.com/specimen/Caacupe+One?preview.text=1+2+3+4+5+6+7+8+9+10+11+12
-// https://openfontlicense.org/open-font-license-official-text/
-document.fonts.add(
-	new FontFace(
-		'Caacupe One',
-		'url({{ @datauri ~/static/CaacupeOne-Regular-subset.woff2 }}) format("woff2")',
-	),
-)
-
 const resolvedDateTimeOptions = new Intl.DateTimeFormat().resolvedOptions()
 const defaultAttributeValues: Record<ObservedAttribute, string> = {
 	locale: resolvedDateTimeOptions.locale,

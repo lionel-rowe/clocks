@@ -54,13 +54,13 @@ function toGradientStop(
 	startPercent ??= 0
 	endPercent ??= 0
 
-	let pct = (startPercent + (endPercent - startPercent) * progress) * 100
+	let x = startPercent + (endPercent - startPercent) * progress
+	x = dir === -1 ? 1 - x : x
 
-	if (dir === -1) pct = 100 - pct
+	const color = `color-mix(in oklab, ${startHsla}, ${endHsla} ${(progress * 100).toFixed(2)}%)`
+	const pct = `${(x * 100).toFixed(2)}%`
 
-	return `color-mix(in oklab, ${startHsla}, ${endHsla} ${Number((progress * 100).toFixed(2))}%) ${
-		Number(pct.toFixed(2))
-	}%`
+	return `${color} ${pct}`
 }
 
 function fractionOfDay(pt: Temporal.PlainTime): number {
