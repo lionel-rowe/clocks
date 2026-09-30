@@ -42,7 +42,7 @@ export abstract class Clock extends HTMLElement {
 		this.#_timeout = value
 	}
 
-	#initialDisplay: string
+	#initialDisplay: string = ''
 
 	declare shadowRoot: ShadowRoot
 
@@ -61,9 +61,6 @@ export abstract class Clock extends HTMLElement {
 		assert($template instanceof HTMLTemplateElement)
 		const templateContent = $template.content
 
-		this.#initialDisplay = this.style.display
-		this.style.display = 'none'
-
 		this.shadowRoot.append(templateContent.cloneNode(true))
 	}
 
@@ -74,6 +71,9 @@ export abstract class Clock extends HTMLElement {
 	}
 
 	connectedCallback() {
+		this.#initialDisplay = this.style.display
+		this.style.display = 'none'
+
 		this.#ready.then(() => {
 			this.style.display = this.#initialDisplay
 			if (this.style.cssText === '') this.removeAttribute('style')

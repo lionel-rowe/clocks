@@ -80,12 +80,11 @@ export class AnalogClock extends Clock {
 		this.#$gloss = $gloss
 		this.#$time = $time
 		this.#$numbers = $$numbers
-
-		this.hourCycle = this.getAttribute('hour-cycle') === '24' ? 24 : 12
 	}
 
 	override connectedCallback() {
 		super.connectedCallback()
+		this.hourCycle = this.getAttribute('hour-cycle') === '24' ? 24 : 12
 		this.#updateGlossUi()
 	}
 
