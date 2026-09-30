@@ -90,7 +90,6 @@ export class AnalogClock extends Clock {
 
 	#updateGlossUi() {
 		this.#$gloss.textContent = this.gloss
-		this.title = this.gloss
 	}
 
 	override attributeChangedCallback(

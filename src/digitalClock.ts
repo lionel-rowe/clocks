@@ -18,6 +18,5 @@ export class DigitalClock extends Clock {
 		assert($time instanceof HTMLTimeElement)
 		$time.dateTime = zdt.toString()
 		$time.textContent = zdt.toLocaleString(this.locale)
-		this.title = this.gloss
 	}
 }
