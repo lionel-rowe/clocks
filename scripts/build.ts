@@ -33,7 +33,11 @@ const build = debounce(async () => {
 		},
 	)
 
-	await Deno.writeTextFile('./dist/main.js', output)
+	const outPath = './dist/main.js'
+
+	await Deno.writeTextFile(outPath, output)
+	// deno-lint-ignore no-console
+	console.info(`Written to ${outPath}`)
 }, 200)
 
 build()

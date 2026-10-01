@@ -29,6 +29,7 @@ type PausedTimeState = {
 type TimeState = RunningTimeState | PausedTimeState
 
 export abstract class Clock extends HTMLElement {
+	protected _internals: ElementInternals
 	protected static get TEMPLATE_ID(): string {
 		// runtime workaround for lack of `static abstract` properties
 		// https://github.com/microsoft/TypeScript/issues/34516
@@ -42,20 +43,19 @@ export abstract class Clock extends HTMLElement {
 		this.#_timeout = value
 	}
 
-	#initialDisplay: string = ''
-
 	declare shadowRoot: ShadowRoot
 
-	protected abstract updateUi(zdt: Temporal.ZonedDateTime): void | Promise<void>
+	protected abstract _updateUi(zdt: Temporal.ZonedDateTime): void | Promise<void>
 
-	protected resources: Promise<unknown>[] = []
+	protected _resources: Promise<unknown>[] = []
 	get #ready() {
-		return Promise.all(this.resources)
+		return Promise.all(this._resources)
 	}
 
 	constructor() {
 		super()
 		this.attachShadow({ mode: 'open' })
+		this._internals = this.attachInternals()
 
 		const $template = document.getElementById(new.target.TEMPLATE_ID)
 		assert($template instanceof HTMLTemplateElement)
@@ -66,31 +66,28 @@ export abstract class Clock extends HTMLElement {
 
 	#abortController = new AbortController()
 
-	#setIdle(idle: boolean) {
-		this.classList.toggle('idle', idle)
+	#setState(state: 'active' | 'loaded', val: boolean) {
+		this._internals.states[val ? 'add' : 'delete'](state)
 	}
 
 	connectedCallback() {
-		this.#initialDisplay = this.style.display
-		this.style.display = 'none'
-
 		this.#ready.then(() => {
-			this.style.display = this.#initialDisplay
-			if (this.style.cssText === '') this.removeAttribute('style')
+			this.#setState('loaded', true)
+			this.#setState('active', true)
 		})
 
 		globalThis.addEventListener('visibilitychange', async () => {
 			switch (document.visibilityState) {
 				case 'hidden': {
-					this.#setIdle(true)
+					this.#setState('active', false)
 					this.#replaceTimeout(-1)
 					break
 				}
 				case 'visible': {
-					this.#setIdle(true)
+					this.#setState('active', false)
 					// await this.#uiUpdated.promise
-					await this.#updateState(this.timeState)
-					this.#setIdle(false)
+					await this.#updateState(this._timeState)
+					this.#setState('active', true)
 
 					break
 				}
@@ -107,6 +104,9 @@ export abstract class Clock extends HTMLElement {
 
 		this.#abortController.abort()
 		this.#abortController = new AbortController()
+
+		this.#setState('loaded', false)
+		this.#setState('active', false)
 	}
 
 	static readonly observedAttributes = observedAttributes as readonly string[]
@@ -120,14 +120,14 @@ export abstract class Clock extends HTMLElement {
 		this[name] = newValue ?? defaultAttributeValues[name]
 	}
 
-	protected timeState: TimeState = this.#getTimeStateOrThrow(defaultAttributeValues.time)
+	protected _timeState: TimeState = this.#getTimeStateOrThrow(defaultAttributeValues.time)
 	get time() {
-		return this.timeState.serialized
+		return this._timeState.serialized
 	}
 	/** @throws {RangeError} if set to an invalid time zone or zoned datetime */
 	set time(v) {
-		this.timeState = this.#getTimeStateOrThrow(v)
-		this.#updateState(this.timeState)
+		this._timeState = this.#getTimeStateOrThrow(v)
+		this.#updateState(this._timeState)
 	}
 	#locale = new Intl.Locale(defaultAttributeValues.locale)
 	get locale() {
@@ -138,21 +138,21 @@ export abstract class Clock extends HTMLElement {
 		this.#locale = this.#getLocaleOrThrow(v)
 	}
 	get paused() {
-		return this.timeState.kind === 'paused'
+		return this._timeState.kind === 'paused'
 	}
 
 	get #timeZone() {
-		const { timeState } = this
+		const { _timeState } = this
 
-		switch (timeState.kind) {
+		switch (_timeState.kind) {
 			case 'paused': {
-				return timeState.time.timeZoneId
+				return _timeState.time.timeZoneId
 			}
 			case 'running': {
-				return timeState.timeZone
+				return _timeState.timeZone
 			}
 			default: {
-				const _: never = timeState
+				const _: never = _timeState
 				throw new Error('unreachable')
 			}
 		}
@@ -168,7 +168,7 @@ export abstract class Clock extends HTMLElement {
 
 	#uiUpdated = Promise.withResolvers<void>()
 	async #updateUi(zdt: Temporal.ZonedDateTime) {
-		await this.updateUi(zdt)
+		await this._updateUi(zdt)
 		this.#uiUpdated.resolve()
 		this.#uiUpdated = Promise.withResolvers<void>()
 	}

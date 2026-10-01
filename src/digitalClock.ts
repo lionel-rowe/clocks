@@ -12,7 +12,7 @@ export class DigitalClock extends Clock {
 		}
 	}
 
-	protected override updateUi(zdt: Temporal.ZonedDateTime) {
+	protected override _updateUi(zdt: Temporal.ZonedDateTime) {
 		// Update the machine-readable time for screen readers and other assistive tech
 		const $time = this.shadowRoot.querySelector('time')
 		assert($time instanceof HTMLTimeElement)

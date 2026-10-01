@@ -12,6 +12,8 @@ const observedAttributes = [
 	'hour-cycle',
 ] as const
 
+const ANALOG_CLOCK_TAG = 'tz-clock-analog'
+
 export class AnalogClock extends Clock {
 	protected static override readonly TEMPLATE_ID = 'tz-clock-analog-template'
 	static #starsSvgUrl: string
@@ -39,7 +41,11 @@ export class AnalogClock extends Clock {
 			const starsSvg = sc.createStarsSvg(200, [200, 200])
 			AnalogClock.#starsSvgUrl = URL.createObjectURL(new Blob([starsSvg], { type: 'image/svg+xml' }))
 
-			customElements.define('tz-clock-analog', AnalogClock)
+			// prevent FOUC - must be <style> rather than <link> to ensure it applies immediately
+			const style = `${ANALOG_CLOCK_TAG}:not(:state(loaded)) { display: none; }`
+			document.head.insertAdjacentHTML('beforeend', `<style>${style}</style>`)
+
+			customElements.define(ANALOG_CLOCK_TAG, AnalogClock)
 		}
 	}
 
@@ -58,10 +64,6 @@ export class AnalogClock extends Clock {
 
 	constructor() {
 		super()
-		this.resources.push(Promise.race([
-			document.fonts.load('1em "Caacupe One"'),
-			delay(5_000),
-		]))
 
 		const $clock = this.shadowRoot.querySelector('.clock')
 		assert($clock instanceof HTMLElement)
@@ -71,6 +73,16 @@ export class AnalogClock extends Clock {
 		assert($gloss instanceof HTMLElement)
 		const $time = this.shadowRoot.querySelector('time')
 		assert($time instanceof HTMLTimeElement)
+		const $link = this.shadowRoot.querySelector('link')
+		assert($link instanceof HTMLLinkElement)
+
+		this._resources.push(Promise.race([
+			delay(5_000),
+			Promise.all([
+				document.fonts.load('1em "Caacupe One"'),
+				new Promise<void>((res) => $link.addEventListener('load', () => res())),
+			]),
+		]))
 
 		const $$numbers = [...this.shadowRoot.querySelectorAll('.number')]
 		assertArrayOf($$numbers, (item) => item instanceof HTMLElement)
@@ -122,7 +134,7 @@ export class AnalogClock extends Clock {
 		}
 	}
 
-	protected override updateUi(zdt: Temporal.ZonedDateTime) {
+	protected override _updateUi(zdt: Temporal.ZonedDateTime) {
 		this.#time = {
 			hours: advance({ target: zdt.hour, current: this.#time.hours, cycle: 24 }),
 			minutes: advance({ target: zdt.minute, current: this.#time.minutes, cycle: 60 }),
